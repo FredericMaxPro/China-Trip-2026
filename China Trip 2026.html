@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)file:///C:/Users/lotz%20frederic/Downloads/china-trip-planner_11.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>China Trip — Aug 30 · Sep 19</title>
+<link rel="stylesheet" href="./China Trip 2026_files/leaflet.css">
+<script src="./China Trip 2026_files/leaflet.js.download"></script>
+<!-- Firebase -->
+<script src="./China Trip 2026_files/firebase-app-compat.js.download"></script>
+<script src="./China Trip 2026_files/firebase-firestore-compat.js.download"></script>
+<style>
+:root{--ink:#1a1a18;--ink2:#4a4a45;--ink3:#8a8a82;--paper:#f7f5f0;--paper2:#eeeae2;--red:#c0392b;--red-pale:#f9eeec;--gold:#b8860b;--gold-pale:#fdf6e3;--green:#2d6a4f;--green-pale:#eaf3ec;--blue:#1a4e78;--blue-pale:#eaf1f8;--border:#d5d0c5;--radius:10px;--font-d:'Georgia','Times New Roman',serif;--font-b:'Helvetica Neue',Arial,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-b);background:var(--paper);color:var(--ink);min-height:100vh;}
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh;}
+.sidebar{background:var(--ink);color:#f0ece4;padding:1.75rem 1.4rem;display:flex;flex-direction:column;gap:1.75rem;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-brand{font-family:var(--font-d);font-size:1.25rem;line-height:1.3;color:#f0ece4;}
+.sidebar-brand span{color:var(--gold);}
+.sidebar-dates{font-size:11px;color:#8a8a7a;margin-top:4px;letter-spacing:.04em;}
+.nav-label{font-size:10px;letter-spacing:.1em;color:#5a5a52;text-transform:uppercase;margin-bottom:7px;font-weight:500;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:#c0bdb5;transition:all .15s;border:none;background:transparent;width:100%;text-align:left;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#f0ece4;}
+.nav-item.active{background:rgba(255,255,255,.12);color:#f0ece4;}
+.progress-box{background:rgba(255,255,255,.06);border-radius:8px;padding:.9rem;}
+.progress-label{font-size:11px;color:#8a8a7a;margin-bottom:7px;}
+.progress-bar-bg{background:rgba(255,255,255,.1);border-radius:4px;height:5px;}
+.progress-bar{height:5px;border-radius:4px;background:var(--gold);transition:width .4s;}
+.progress-nums{display:flex;justify-content:space-between;font-size:11px;color:#8a8a7a;margin-top:5px;}
+/* Sync indicator */
+.sync-status{font-size:10px;padding:5px 9px;border-radius:6px;text-align:center;transition:all .3s;}
+.sync-status.synced{background:rgba(45,106,79,.3);color:#7ecfa8;}
+.sync-status.saving{background:rgba(184,134,11,.2);color:#d4a843;}
+.sync-status.error{background:rgba(192,57,43,.2);color:#e08070;}
+.main{padding:2.25rem 2.25rem 4rem;overflow-y:auto;}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:1.75rem;}
+.tab{padding:8px 15px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--red);border-bottom-color:var(--red);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.section-head{margin-bottom:1.25rem;}
+.section-title{font-family:var(--font-d);font-size:1.35rem;color:var(--ink);}
+.section-sub{font-size:12px;color:var(--ink3);margin-top:3px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:1.75rem;}
+.stat-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;}
+.stat-card-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.stat-card-value{font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1;}
+.stat-card-sub{font-size:11px;color:var(--ink3);margin-top:3px;}
+.city-grid{display:flex;flex-direction:column;}
+.city-card{background:white;border:1px solid var(--border);border-radius:var(--radius);display:grid;grid-template-columns:4px 1fr auto auto;overflow:hidden;transition:box-shadow .15s;margin-bottom:0;}
+.city-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.city-card.parked{opacity:.5;background:var(--paper);}
+.city-accent{width:4px;}
+.city-body{padding:.9rem 1.15rem;cursor:pointer;}
+.city-body:hover .city-name{color:var(--blue);}
+.city-header{display:flex;align-items:center;gap:9px;margin-bottom:5px;flex-wrap:wrap;}
+.city-name{font-size:.95rem;font-weight:600;color:var(--ink);transition:color .15s;}
+.city-open-hint{font-size:10px;color:var(--ink3);margin-left:auto;opacity:0;transition:opacity .15s;}
+.city-body:hover .city-open-hint{opacity:1;}
+.city-status{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
+.city-status.fixed{background:var(--green-pale);color:var(--green);}
+.city-status.optional{background:var(--gold-pale);color:var(--gold);}
+.city-status.parked{background:var(--paper2);color:var(--ink3);}
+.city-dates-nights{font-size:11px;color:var(--ink3);margin-bottom:5px;}
+.city-highlights{display:flex;gap:5px;flex-wrap:wrap;}
+.highlight-tag{font-size:10px;color:var(--ink2);background:var(--paper);border:1px solid var(--border);padding:2px 7px;border-radius:4px;}
+.city-todo-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--blue-pale);color:var(--blue);font-weight:600;cursor:pointer;white-space:nowrap;}
+.city-todo-badge.all-done{background:var(--green-pale);color:var(--green);}
+.city-reorder{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:.6rem .5rem;border-left:1px solid var(--paper2);}
+.city-actions{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:.9rem .9rem;border-left:1px solid var(--paper2);}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 7px;cursor:pointer;font-size:12px;color:var(--ink3);transition:all .12s;white-space:nowrap;}
+.btn-icon:hover{background:var(--paper);color:var(--ink);}
+.btn-icon.danger:hover{background:var(--red-pale);color:var(--red);border-color:#e0b0ab;}
+.btn-move{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 6px;cursor:pointer;font-size:11px;color:var(--ink3);transition:all .12s;line-height:1;}
+.btn-move:hover{background:var(--paper2);color:var(--ink);}
+.btn-move:disabled{opacity:.2;cursor:default;}
+.transport-connector{padding:0 8px 0 14px;}
+.transport-inner{border-left:2px dashed var(--border);margin-left:5px;padding:5px 0 5px 15px;}
+.transport-label{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.transport-options{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-start;}
+.transport-option{border:1px solid var(--border);border-radius:8px;padding:7px 9px;background:white;min-width:155px;flex:1;max-width:260px;cursor:pointer;transition:border-color .15s;}
+.transport-option:hover{border-color:var(--gold);}
+.transport-option.preferred-style{border-color:var(--green);background:var(--green-pale);}
+.transport-option.preferred-style .t-mode{color:var(--green);}
+.transport-option.selected-opt{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 2px rgba(26,78,120,.15);}
+.transport-option.selected-opt .t-mode{color:var(--blue);}
+.transport-option-head{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
+.t-mode-icon{font-size:14px;}
+.t-mode{font-size:11px;font-weight:600;color:var(--ink2);}
+.t-badge{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;margin-left:auto;}
+.t-badge.rec{background:var(--green);color:white;}
+.t-badge.sel{background:var(--blue);color:white;}
+.t-detail{font-size:10px;color:var(--ink3);margin-bottom:5px;line-height:1.5;}
+.t-price-row{display:flex;align-items:center;gap:5px;}
+.t-price-label{font-size:10px;color:var(--ink3);white-space:nowrap;}
+.t-price-input{width:65px;padding:3px 5px;font-size:11px;text-align:right;border:1px solid var(--border);border-radius:5px;font-family:var(--font-b);color:var(--ink);background:white;}
+.t-price-input:focus{outline:none;border-color:var(--gold);}
+.t-price-cur{font-size:10px;color:var(--ink3);}
+.transport-no-direct{font-size:11px;color:var(--ink3);padding:6px 9px;background:var(--red-pale);border-radius:6px;border-left:3px solid #e0a0a0;}
+.add-city-row{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+.add-city-row input,.add-city-row select{padding:7px 9px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:white;color:var(--ink);font-family:var(--font-b);}
+.add-city-row input:focus,.add-city-row select:focus{outline:none;border-color:var(--gold);}
+.btn-primary{background:var(--red);color:white;border:none;border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.btn-primary:hover{opacity:.88;}
+.timeline-bar{display:flex;margin-bottom:1.75rem;border-radius:8px;overflow:hidden;height:28px;}
+.timeline-seg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white;letter-spacing:.04em;overflow:hidden;white-space:nowrap;cursor:default;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:white;border-radius:14px;width:560px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px);transition:transform .2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:1.2rem 1.4rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.modal-color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.modal-title{font-family:var(--font-d);font-size:1.1rem;font-weight:600;color:var(--ink);flex:1;}
+.modal-subtitle{font-size:11px;color:var(--ink3);margin-top:2px;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3);padding:0 4px;line-height:1;margin-left:auto;flex-shrink:0;}
+.modal-close:hover{color:var(--ink);}
+.modal-body{overflow-y:auto;padding:1rem 1.4rem;flex:1;}
+.modal-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);margin:0 0 7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.modal-todo-list{display:flex;flex-direction:column;gap:2px;margin-bottom:1rem;}
+.modal-todo-item{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:7px;transition:background .1s;}
+.modal-todo-item:hover{background:var(--paper2);}
+.modal-todo-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
+.modal-todo-item label{font-size:12px;color:var(--ink);cursor:pointer;flex:1;}
+.modal-todo-item.done label{text-decoration:line-through;color:var(--ink3);}
+.modal-del-btn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink3);padding:2px 4px;opacity:0;transition:opacity .1s;}
+.modal-todo-item:hover .modal-del-btn{opacity:1;}
+.modal-todo-cat{font-size:9px;color:var(--ink3);background:var(--paper2);padding:1px 5px;border-radius:4px;margin-left:3px;white-space:nowrap;}
+.modal-add-row{display:flex;gap:7px;margin-top:4px;}
+.modal-add-row input{flex:1;padding:6px 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:white;color:var(--ink);font-family:var(--font-b);}
+.modal-add-row input:focus{outline:none;border-color:var(--gold);}
+.modal-notes{width:100%;font-size:12px;font-family:var(--font-b);color:var(--ink2);border:1px solid var(--border);border-radius:7px;padding:7px 9px;background:var(--paper);resize:vertical;min-height:55px;margin-top:5px;}
+.modal-notes:focus{outline:none;border-color:var(--gold);}
+.checklist-section{margin-bottom:1.4rem;}
+.checklist-heading{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.checklist-items{display:flex;flex-direction:column;gap:3px;}
+.check-item{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;cursor:pointer;transition:background .1s;}
+.check-item:hover{background:var(--paper2);}
+.check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
+.check-item label{font-size:12px;color:var(--ink);cursor:pointer;flex:1;}
+.check-item.done label{text-decoration:line-through;color:var(--ink3);}
+.check-item .del-check{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:12px;opacity:0;transition:opacity .1s;padding:2px 4px;}
+.check-item:hover .del-check{opacity:1;}
+.check-source-tag{font-size:9px;padding:1px 5px;border-radius:10px;background:var(--blue-pale);color:var(--blue);margin-left:4px;white-space:nowrap;font-weight:500;}
+.add-check-row{display:flex;gap:7px;margin-top:7px;}
+.add-check-row input{flex:1;padding:6px 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:white;color:var(--ink);font-family:var(--font-b);}
+.add-check-row input:focus{outline:none;border-color:var(--gold);}
+.budget-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;}
+.budget-table{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.budget-table-head{padding:.7rem 1rem;background:var(--paper2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);display:flex;justify-content:space-between;}
+.budget-row-item{display:flex;align-items:center;gap:8px;padding:8px 1rem;border-top:1px solid var(--paper2);}
+.budget-cat-name{flex:1;font-size:12px;color:var(--ink);}
+.budget-transport-sub{font-size:9px;color:var(--ink3);margin-top:1px;}
+.budget-amt-input{width:85px;padding:3px 7px;font-size:12px;text-align:right;border:1px solid var(--border);border-radius:5px;font-family:var(--font-b);color:var(--ink);background:var(--paper);}
+.budget-amt-input:focus{outline:none;border-color:var(--gold);background:white;}
+.budget-total-row{display:flex;justify-content:space-between;padding:.7rem 1rem;font-weight:600;font-size:13px;border-top:2px solid var(--border);background:var(--paper);}
+.budget-summary{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;}
+.budget-summary h3{font-size:13px;font-weight:600;margin-bottom:.9rem;}
+.budget-legend{display:flex;flex-direction:column;gap:5px;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.legend-pct{margin-left:auto;font-weight:500;color:var(--ink);}
+.budget-summary-totals{margin-top:1rem;border-top:1px solid var(--border);padding-top:.9rem;}
+.total-line{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
+.total-line.big{font-size:14px;font-weight:600;padding-top:7px;border-top:1px solid var(--border);margin-top:3px;}
+.currency-row{display:flex;align-items:center;gap:7px;margin-bottom:.9rem;font-size:12px;color:var(--ink3);}
+.currency-row select{padding:3px 7px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:white;}
+.transport-budget-note{font-size:11px;color:var(--ink3);margin-bottom:11px;padding:7px 11px;background:var(--blue-pale);border-radius:7px;border-left:3px solid var(--blue);}
+.tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.tip-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;}
+.tip-card-head{display:flex;align-items:center;gap:7px;margin-bottom:.7rem;}
+.tip-card-icon{font-size:1.1rem;}
+.tip-card-title{font-size:13px;font-weight:600;color:var(--ink);}
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.tip-list li{font-size:12px;color:var(--ink2);padding-left:13px;position:relative;line-height:1.5;}
+.tip-list li::before{content:'·';position:absolute;left:0;color:var(--red);font-weight:bold;}
+.tip-highlight{display:inline;background:var(--gold-pale);color:var(--gold);padding:0 4px;border-radius:3px;font-weight:500;font-size:10px;}
+.packing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.pack-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:.9rem;}
+.pack-card-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:7px;}
+.pack-items{display:flex;flex-direction:column;gap:3px;}
+.pack-item{display:flex;align-items:center;gap:7px;padding:2px 0;}
+.pack-item input[type=checkbox]{accent-color:var(--green);cursor:pointer;}
+.pack-item label{font-size:11px;color:var(--ink2);cursor:pointer;}
+.pack-item.done label{text-decoration:line-through;color:var(--ink3);}
+#mapContainer{width:100%;height:calc(100vh - 185px);min-height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+.map-legend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px;}
+.map-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink2);background:white;border:1px solid var(--border);padding:3px 9px;border-radius:20px;}
+.map-legend-dot{width:9px;height:9px;border-radius:50%;}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:white;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transform:translateY(7px);transition:all .25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+/* Loading overlay */
+.loading-overlay{position:fixed;inset:0;background:var(--paper);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:13px;color:var(--ink3);}
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr;}.sidebar{height:auto;position:relative;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .budget-grid,.tips-grid,.packing-grid{grid-template-columns:1fr;}
+  .transport-options{flex-direction:column;}.transport-option{max-width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to Firebase…</div>
+</div>
+
+<div class="shell">
+<aside class="sidebar">
+  <div>
+    <div class="sidebar-brand">中国<br><span>China Trip</span></div>
+    <div class="sidebar-dates">Aug 30 – Sep 19, 2025 · 20 nights</div>
+  </div>
+  <nav>
+    <div class="nav-label">Planning</div>
+    <button class="nav-item active" onclick="showTab(&#39;itinerary&#39;)">🗺 Itinerary</button>
+    <button class="nav-item" onclick="showTab(&#39;map&#39;)">📍 Map</button>
+    <button class="nav-item" onclick="showTab(&#39;checklist&#39;)">✅ Checklist</button>
+    <button class="nav-item" onclick="showTab(&#39;budget&#39;)">💰 Budget</button>
+    <button class="nav-item" onclick="showTab(&#39;packing&#39;)">🎒 Packing list</button>
+    <button class="nav-item" onclick="showTab(&#39;tips&#39;)">💡 China tips</button>
+  </nav>
+  <div class="progress-box">
+    <div class="progress-label">Checklist progress</div>
+    <div class="progress-bar-bg"><div class="progress-bar" id="sidebarProgress" style="width:0%"></div></div>
+    <div class="progress-nums"><span id="sidebarDone">0 done</span><span id="sidebarTotal">48 items</span></div>
+  </div>
+  <div id="syncStatus" class="sync-status synced">✓ Synced</div>
+  <div style="font-size:11px;color:#5a5a52;line-height:1.8;">2 travellers<br>Fly in: Shanghai ✈<br>Fly out: Beijing ✈</div>
+</aside>
+
+<main class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(&#39;itinerary&#39;)">Itinerary</button>
+    <button class="tab" onclick="showTab(&#39;map&#39;)">Map</button>
+    <button class="tab" onclick="showTab(&#39;checklist&#39;)">Checklist</button>
+    <button class="tab" onclick="showTab(&#39;budget&#39;)">Budget</button>
+    <button class="tab" onclick="showTab(&#39;packing&#39;)">Packing</button>
+    <button class="tab" onclick="showTab(&#39;tips&#39;)">China tips</button>
+  </div>
+
+  <div id="tab-itinerary" class="tab-panel active">
+    <div class="section-head">
+      <div class="section-title">Your itinerary</div>
+      <div class="section-sub">Click a city to open its to-do list · ↑↓ to reorder · click a transport option to select it · all changes sync live</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-card-label">Total nights</div><div class="stat-card-value" id="statNights">24</div><div class="stat-card-sub">of 20 available</div></div>
+      <div class="stat-card"><div class="stat-card-label">Cities</div><div class="stat-card-value" id="statCities">7</div><div class="stat-card-sub">destinations</div></div>
+      <div class="stat-card"><div class="stat-card-label">Fixed stops</div><div class="stat-card-value" id="statFixed">5</div><div class="stat-card-sub">confirmed</div></div>
+      <div class="stat-card"><div class="stat-card-label">Transport total</div><div class="stat-card-value" id="statTransport">€650</div><div class="stat-card-sub">internal travel</div></div>
+    </div>
+    <div class="timeline-bar" id="timelineBar"><div class="timeline-seg" title="Shanghai · 4 nights" style="width: 16.6667%; background: rgb(127, 119, 221); opacity: 1;">Shanghai</div><div class="timeline-seg" title="Yangshuo · 4 nights" style="width: 16.6667%; background: rgb(29, 158, 117); opacity: 1;">Yangshuo</div><div class="timeline-seg" title="Zhangjiajie · 3 nights" style="width: 12.5%; background: rgb(192, 57, 43); opacity: 1;">Zhangjiajie</div><div class="timeline-seg" title="Lijiang / Shangri-La · 4 nights" style="width: 16.6667%; background: rgb(186, 117, 23); opacity: 1;">Lijiang</div><div class="timeline-seg" title="Chengdu · 3 nights" style="width: 12.5%; background: rgb(212, 83, 126); opacity: 0.6;">Chengdu</div><div class="timeline-seg" title="Xi&#39;an · 2 nights" style="width: 8.33333%; background: rgb(136, 135, 128); opacity: 0.6;">Xi'an</div><div class="timeline-seg" title="Beijing · 4 nights" style="width: 16.6667%; background: rgb(24, 95, 165); opacity: 1;">Beijing</div></div>
+    <div class="city-grid" id="cityGrid"><div class="city-card">
+      <div class="city-accent" style="background:#7F77DD;"></div>
+      <div class="city-body" onclick="openModal(1)">
+        <div class="city-header"><span class="city-name">Shanghai</span><span class="city-status fixed">✓ Fixed</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">4 nights · <strong>confirmed</strong></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">The Bund</span><span class="highlight-tag">Yu Garden</span><span class="highlight-tag">French Concession</span><span class="highlight-tag">Xintiandi</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(1)">0/3 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(0,-1)" disabled="">↑</button>
+        <button class="btn-move" onclick="moveCity(0,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(1,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(1,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(1)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(1)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Yangshuo</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;1-2&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">🚄</span><span class="t-mode">Train</span><span class="t-badge sel">✓ Selected</span></div>
+            <div class="t-detail"><strong>High-speed to Guilin, bus to Yangshuo</strong><br>9–11 h total<br><span style="color:var(--ink3)">G-train Shanghai→Guilin, then 1.5 h bus.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="100" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;1-2&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div><div class="transport-option preferred-style" onclick="selectTransportOption(&#39;1-2&#39;,1)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span><span class="t-badge rec">Recommended</span></div>
+            <div class="t-detail"><strong>Fly Shanghai → Guilin (KWL), bus to Yangshuo</strong><br>~3.5 h door-to-door<br><span style="color:var(--ink3)">Faster and similar price. Recommended.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="120" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;1-2&#39;,1,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#1D9E75;"></div>
+      <div class="city-body" onclick="openModal(2)">
+        <div class="city-header"><span class="city-name">Yangshuo</span><span class="city-status fixed">✓ Fixed</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">4 nights · <strong>confirmed</strong></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Li River cruise from Guilin</span><span class="highlight-tag">Karst mountains</span><span class="highlight-tag">Moon Hill</span><span class="highlight-tag">Bike the countryside</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(2)">0/4 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(1,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(1,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(2,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(2,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(2)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(2)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Zhangjiajie</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;2-3&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span><span class="t-badge rec">✓ Selected · recommended</span></div>
+            <div class="t-detail"><strong>Fly Guilin (KWL) → Zhangjiajie (DYG) via Changsha</strong><br>~3.5 h incl. connection<br><span style="color:var(--ink3)">Only realistic option.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="140" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;2-3&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#c0392b;"></div>
+      <div class="city-body" onclick="openModal(3)">
+        <div class="city-header"><span class="city-name">Zhangjiajie</span><span class="city-status fixed">✓ Fixed</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">3 nights · <strong>confirmed</strong></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Avatar mountains</span><span class="highlight-tag">Glass bridge</span><span class="highlight-tag">Tianmen Mountain</span><span class="highlight-tag">Yuanjiajie</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(3)">0/5 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(2,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(2,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(3,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(3,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(3)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(3)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Lijiang / Shangri-La</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;3-4&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span><span class="t-badge rec">✓ Selected · recommended</span></div>
+            <div class="t-detail"><strong>Fly Zhangjiajie (DYG) → Lijiang (LJG) via Kunming/Chengdu</strong><br>~4–5 h incl. connection<br><span style="color:var(--ink3)">No direct. Book early on Trip.com.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="180" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;3-4&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#BA7517;"></div>
+      <div class="city-body" onclick="openModal(4)">
+        <div class="city-header"><span class="city-name">Lijiang / Shangri-La</span><span class="city-status fixed">✓ Fixed</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">4 nights · <strong>confirmed</strong></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Old Town Lijiang</span><span class="highlight-tag">Jade Dragon Snow Mountain</span><span class="highlight-tag">Shangri-La old town</span><span class="highlight-tag">Tiger Leaping Gorge</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(4)">0/5 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(3,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(3,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(4,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(4,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(4)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(4)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Chengdu</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;4-5&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span><span class="t-badge rec">✓ Selected · recommended</span></div>
+            <div class="t-detail"><strong>Fly Lijiang (LJG) → Chengdu (CTU)</strong><br>~1.5 h<br><span style="color:var(--ink3)">Short hop, often cheap.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="90" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;4-5&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#D4537E;"></div>
+      <div class="city-body" onclick="openModal(5)">
+        <div class="city-header"><span class="city-name">Chengdu</span><span class="city-status optional">? Optional</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">3 nights · still deciding</div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Giant Panda Base</span><span class="highlight-tag">Sichuan hotpot</span><span class="highlight-tag">Leshan Giant Buddha</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(5)">0/4 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(4,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(4,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(5,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(5,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(5)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(5)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Xi'an</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;5-6&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">🚄</span><span class="t-mode">Train</span><span class="t-badge rec">✓ Selected · recommended</span></div>
+            <div class="t-detail"><strong>High-speed train Chengdu → Xi'an</strong><br>~3.5 h<br><span style="color:var(--ink3)">Best option. City-centre to city-centre.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="60" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;5-6&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div><div class="transport-option" onclick="selectTransportOption(&#39;5-6&#39;,1)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span></div>
+            <div class="t-detail"><strong>Fly Chengdu (CTU) → Xi'an (XIY)</strong><br>~1.5 h + transfers<br><span style="color:var(--ink3)">Train more convenient overall.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="80" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;5-6&#39;,1,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#888780;"></div>
+      <div class="city-body" onclick="openModal(6)">
+        <div class="city-header"><span class="city-name">Xi'an</span><span class="city-status optional">? Optional</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">2 nights · still deciding</div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Terracotta Army</span><span class="highlight-tag">Ancient City Wall</span><span class="highlight-tag">Muslim Quarter</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(6)">0/4 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(5,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(5,1)">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(6,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(6,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(6)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(6)">✕</button>
+      </div></div><div class="transport-connector"><div class="transport-inner"><div class="transport-label">↓ Getting to Beijing</div><div class="transport-options"><div class="transport-option selected-opt" onclick="selectTransportOption(&#39;6-7&#39;,0)">
+            <div class="transport-option-head"><span class="t-mode-icon">🚄</span><span class="t-mode">Train</span><span class="t-badge rec">✓ Selected · recommended</span></div>
+            <div class="t-detail"><strong>High-speed train Xi'an → Beijing</strong><br>~4.5 h<br><span style="color:var(--ink3)">Superb G-train. Most convenient.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="80" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;6-7&#39;,0,parseFloat(this.value)||0)">
+            </div>
+          </div><div class="transport-option" onclick="selectTransportOption(&#39;6-7&#39;,1)">
+            <div class="transport-option-head"><span class="t-mode-icon">✈️</span><span class="t-mode">Flight</span></div>
+            <div class="t-detail"><strong>Fly Xi'an (XIY) → Beijing (PEK)</strong><br>~2 h + transfers<br><span style="color:var(--ink3)">Similar total time with transfers.</span></div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="90" onclick="event.stopPropagation()" onchange="updateTransportPrice(&#39;6-7&#39;,1,parseFloat(this.value)||0)">
+            </div>
+          </div></div></div></div><div class="city-card">
+      <div class="city-accent" style="background:#185FA5;"></div>
+      <div class="city-body" onclick="openModal(7)">
+        <div class="city-header"><span class="city-name">Beijing</span><span class="city-status fixed">✓ Fixed</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">4 nights · <strong>confirmed</strong></div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;"><span class="highlight-tag">Great Wall</span><span class="highlight-tag">Forbidden City</span><span class="highlight-tag">Temple of Heaven</span><span class="highlight-tag">Summer Palace</span></div>
+          <span class="city-todo-badge" onclick="event.stopPropagation();openModal(7)">0/5 done</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(6,-1)">↑</button>
+        <button class="btn-move" onclick="moveCity(6,1)" disabled="">↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(7,-1)">− night</button>
+        <button class="btn-icon" onclick="changeNights(7,1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(7)">⇆</button>
+        <button class="btn-icon danger" onclick="removeCity(7)">✕</button>
+      </div></div></div>
+    <div class="add-city-row" style="margin-top:12px;">
+      <input id="newCityName" placeholder="City name" style="flex:1;min-width:110px;">
+      <input id="newCityNights" type="number" min="0" max="14" placeholder="Nights" style="width:75px;">
+      <select id="newCityStatus"><option value="fixed">Fixed</option><option value="optional">Optional</option></select>
+      <button class="btn-primary" onclick="addCity()">+ Add city</button>
+    </div>
+  </div>
+
+  <div id="tab-map" class="tab-panel">
+    <div class="section-head">
+      <div class="section-title">Route map</div>
+      <div class="section-sub">Solid blue = train · dashed red = flight · click a marker to open city to-dos</div>
+    </div>
+    <div class="map-legend" id="mapLegend"><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#7F77DD;"></div>1. Shanghai · 4n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#1D9E75;"></div>2. Yangshuo · 4n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#c0392b;"></div>3. Zhangjiajie · 3n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#BA7517;"></div>4. Lijiang / Shangri-La · 4n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#D4537E;"></div>5. Chengdu · 3n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#888780;"></div>6. Xi'an · 2n</div><div class="map-legend-item" style=""><div class="map-legend-dot" style="background:#185FA5;"></div>7. Beijing · 4n</div></div>
+    <div id="mapContainer" class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(-732px, -226px, 0px) scale(1);"><img alt="" src="./China Trip 2026_files/12.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1112px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/12(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1368px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1112px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1368px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1112px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1368px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/12(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(856px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/12(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1624px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(856px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1624px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1112px, 810px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1368px, 810px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(856px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1624px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(856px, 810px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1624px, 810px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/12(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(600px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/12(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1880px, 298px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(600px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/13(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1880px, 554px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(600px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/11(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1880px, 42px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(600px, 810px, 0px); opacity: 1;"><img alt="" src="./China Trip 2026_files/14(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1880px, 810px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="1436" height="726" viewBox="-120 -60 1436 726" style="transform: translate3d(-120px, -60px, 0px);"><g><path class="leaflet-interactive" stroke="#1a4e78" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" fill="none" d="M840 347L590 514"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4" fill="none" d="M590 514L590 403"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4" fill="none" d="M590 403L357 461"></path><path class="leaflet-interactive" stroke="#c0392b" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4" fill="none" d="M357 461L444 365"></path><path class="leaflet-interactive" stroke="#1a4e78" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" fill="none" d="M444 365L555 265"></path><path class="leaflet-interactive" stroke="#1a4e78" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="none" fill="none" d="M555 265L725 104"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(840px, 347px, 0px); z-index: 347;"><div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">1</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(715px, 432px, 0px); z-index: 432;"><div style="background:white;border:1px solid #1a4e78;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#1a4e78;font-weight:600;">🚄 9–11 h total</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(590px, 514px, 0px); z-index: 514;"><div style="width:32px;height:32px;border-radius:50%;background:#1D9E75;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">2</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(590px, 459px, 0px); z-index: 459;"><div style="background:white;border:1px solid #c0392b;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#c0392b;font-weight:600;">✈️ ~3.5 h incl. connection</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(590px, 403px, 0px); z-index: 403;"><div style="width:32px;height:32px;border-radius:50%;background:#c0392b;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">3</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(473px, 432px, 0px); z-index: 432;"><div style="background:white;border:1px solid #c0392b;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#c0392b;font-weight:600;">✈️ ~4–5 h incl. connection</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(357px, 461px, 0px); z-index: 461;"><div style="width:32px;height:32px;border-radius:50%;background:#BA7517;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">4</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(400px, 413px, 0px); z-index: 413;"><div style="background:white;border:1px solid #c0392b;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#c0392b;font-weight:600;">✈️ ~1.5 h</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(444px, 365px, 0px); z-index: 365;"><div style="width:32px;height:32px;border-radius:50%;background:#D4537E;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">5</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(499px, 315px, 0px); z-index: 315;"><div style="background:white;border:1px solid #1a4e78;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#1a4e78;font-weight:600;">🚄 ~3.5 h</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(555px, 265px, 0px); z-index: 265;"><div style="width:32px;height:32px;border-radius:50%;background:#888780;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">6</div></div><div class="leaflet-marker-icon leaflet-zoom-animated" tabindex="0" role="button" style="margin-left: 0px; margin-top: 0px; width: 0px; height: 0px; transform: translate3d(640px, 186px, 0px); z-index: 186;"><div style="background:white;border:1px solid #1a4e78;border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:#1a4e78;font-weight:600;">🚄 ~4.5 h</div></div><div class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(725px, 104px, 0px); z-index: 104;"><div style="width:32px;height:32px;border-radius:50%;background:#185FA5;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">7</div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(6618.45px, 3302.78px, 0px) scale(16);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="file:///C:/Users/lotz%20frederic/Downloads/china-trip-planner_11.html#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="file:///C:/Users/lotz%20frederic/Downloads/china-trip-planner_11.html#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap contributors</div></div></div></div>
+  </div>
+
+  <div id="tab-checklist" class="tab-panel">
+    <div class="section-head">
+      <div class="section-title">Pre-trip checklist</div>
+      <div class="section-sub">City tasks (blue tags) are shared with each city's to-do popup · synced live</div>
+    </div>
+    <div id="checklistContainer"><div class="checklist-section"><div class="checklist-heading">Before you go (0/10)</div>
+      <div class="checklist-items"><div class="check-item " id="ci-c1">
+        <input type="checkbox" id="chk-c1" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c1&#39;)">
+        <label for="chk-c1">International flights booked (PVG in, PEK out)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c1&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c2">
+        <input type="checkbox" id="chk-c2" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c2&#39;)">
+        <label for="chk-c2">Travel insurance with medical &amp; evacuation cover</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c2&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c3">
+        <input type="checkbox" id="chk-c3" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c3&#39;)">
+        <label for="chk-c3">VPN app installed &amp; tested (before entering China!)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c3&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c4">
+        <input type="checkbox" id="chk-c4" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c4&#39;)">
+        <label for="chk-c4">Register on WeChat — link to European bank card</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c4&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c5">
+        <input type="checkbox" id="chk-c5" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c5&#39;)">
+        <label for="chk-c5">Set up Alipay with foreign card (easier at home)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c5&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c6">
+        <input type="checkbox" id="chk-c6" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c6&#39;)">
+        <label for="chk-c6">Notify bank of travel to China (avoid card blocks)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c6&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c7">
+        <input type="checkbox" id="chk-c7" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c7&#39;)">
+        <label for="chk-c7">Download Google Translate offline Chinese pack</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c7&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c8">
+        <input type="checkbox" id="chk-c8" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c8&#39;)">
+        <label for="chk-c8">Download Maps.me or HERE with China offline maps</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c8&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c9">
+        <input type="checkbox" id="chk-c9" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c9&#39;)">
+        <label for="chk-c9">Install Trip.com for domestic trains &amp; flights</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c9&#39;)">✕</button>
+      </div><div class="check-item " id="ci-c10">
+        <input type="checkbox" id="chk-c10" onchange="toggleCheck(&#39;Before you go&#39;,&#39;c10&#39;)">
+        <label for="chk-c10">Buy some Yuan cash (CNY) before departure</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Before you go&#39;,&#39;c10&#39;)">✕</button>
+      </div></div>
+      <div class="add-check-row">
+        <input id="nc-Before_you_go" placeholder="Add item…" onkeydown="if(event.key===&#39;Enter&#39;)addCheck(&#39;Before you go&#39;,this)">
+        <button class="btn-primary" onclick="addCheck(&#39;Before you go&#39;,document.getElementById(&#39;nc-Before_you_go&#39;))">+</button>
+      </div></div><div class="checklist-section"><div class="checklist-heading">Health &amp; documents (0/8)</div>
+      <div class="checklist-items"><div class="check-item " id="ci-ch1">
+        <input type="checkbox" id="chk-ch1" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch1&#39;)">
+        <label for="chk-ch1">Passports valid 6+ months beyond Sep 19, 2025</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch1&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch2">
+        <input type="checkbox" id="chk-ch2" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch2&#39;)">
+        <label for="chk-ch2">International SIM card or eSIM ordered (e.g. Airalo)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch2&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch3">
+        <input type="checkbox" id="chk-ch3" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch3&#39;)">
+        <label for="chk-ch3">Altitude sickness medication (for Shangri-La ~3200m)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch3&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch4">
+        <input type="checkbox" id="chk-ch4" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch4&#39;)">
+        <label for="chk-ch4">Doctor visit if needed for altitude meds (Diamox prescription)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch4&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch5">
+        <input type="checkbox" id="chk-ch5" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch5&#39;)">
+        <label for="chk-ch5">Routine vaccinations up to date (Hep A, Typhoid recommended)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch5&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch6">
+        <input type="checkbox" id="chk-ch6" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch6&#39;)">
+        <label for="chk-ch6">Travel health advisory check (ECDC / your country's health site)</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch6&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch7">
+        <input type="checkbox" id="chk-ch7" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch7&#39;)">
+        <label for="chk-ch7">Emergency contacts printed and saved offline</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch7&#39;)">✕</button>
+      </div><div class="check-item " id="ci-ch8">
+        <input type="checkbox" id="chk-ch8" onchange="toggleCheck(&#39;Health &amp; documents&#39;,&#39;ch8&#39;)">
+        <label for="chk-ch8">Travel insurance documents printed / saved offline</label>
+        <button class="del-check" onclick="deleteCheck(&#39;Health &amp; documents&#39;,&#39;ch8&#39;)">✕</button>
+      </div></div>
+      <div class="add-check-row">
+        <input id="nc-Health___documents" placeholder="Add item…" onkeydown="if(event.key===&#39;Enter&#39;)addCheck(&#39;Health &amp; documents&#39;,this)">
+        <button class="btn-primary" onclick="addCheck(&#39;Health &amp; documents&#39;,document.getElementById(&#39;nc-Health___documents&#39;))">+</button>
+      </div></div><div class="checklist-section"><div class="checklist-heading">City to-dos (0/30)</div><div class="checklist-items"><div class="check-item ">
+    <input type="checkbox" id="cchk-sh1" onchange="toggleCityTodo(1,&#39;sh1&#39;)">
+    <label for="cchk-sh1">Book accommodation in Shanghai (Bund / French Concession area)<span class="check-source-tag">Shanghai</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-sh2" onchange="toggleCityTodo(1,&#39;sh2&#39;)">
+    <label for="cchk-sh2">Arrange arrival transfer from Pudong airport (PVG)<span class="check-source-tag">Shanghai</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-sh3" onchange="toggleCityTodo(1,&#39;sh3&#39;)">
+    <label for="cchk-sh3">Pre-load WeChat &amp; Alipay before landing<span class="check-source-tag">Shanghai</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-ys1" onchange="toggleCityTodo(2,&#39;ys1&#39;)">
+    <label for="cchk-ys1">Book transport TO Yangshuo (fly Shanghai → Guilin KWL, then bus)<span class="check-source-tag">Yangshuo</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-ys2" onchange="toggleCityTodo(2,&#39;ys2&#39;)">
+    <label for="cchk-ys2">Book accommodation in Yangshuo (Old Street area)<span class="check-source-tag">Yangshuo</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-ys3" onchange="toggleCityTodo(2,&#39;ys3&#39;)">
+    <label for="cchk-ys3">Buy Li River cruise ticket (Guilin → Yangshuo)<span class="check-source-tag">Yangshuo</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-ys4" onchange="toggleCityTodo(2,&#39;ys4&#39;)">
+    <label for="cchk-ys4">Arrange Guilin airport → Yangshuo transfer (~1.5 h)<span class="check-source-tag">Yangshuo</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-zjj1" onchange="toggleCityTodo(3,&#39;zjj1&#39;)">
+    <label for="cchk-zjj1">Book transport TO Zhangjiajie (fly Guilin → DYG via Changsha)<span class="check-source-tag">Zhangjiajie</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-zjj2" onchange="toggleCityTodo(3,&#39;zjj2&#39;)">
+    <label for="cchk-zjj2">Book accommodation near Zhangjiajie park entrance<span class="check-source-tag">Zhangjiajie</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-zjj3" onchange="toggleCityTodo(3,&#39;zjj3&#39;)">
+    <label for="cchk-zjj3">Buy Zhangjiajie National Forest Park ticket (book online)<span class="check-source-tag">Zhangjiajie</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-zjj4" onchange="toggleCityTodo(3,&#39;zjj4&#39;)">
+    <label for="cchk-zjj4">Book Tianmen Mountain / cable car ticket<span class="check-source-tag">Zhangjiajie</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-zjj5" onchange="toggleCityTodo(3,&#39;zjj5&#39;)">
+    <label for="cchk-zjj5">Check glass bridge booking (limited slots)<span class="check-source-tag">Zhangjiajie</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-lj1" onchange="toggleCityTodo(4,&#39;lj1&#39;)">
+    <label for="cchk-lj1">Book transport TO Lijiang (fly DYG → LJG via Kunming or Chengdu)<span class="check-source-tag">Lijiang / Shangri-La</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-lj2" onchange="toggleCityTodo(4,&#39;lj2&#39;)">
+    <label for="cchk-lj2">Book accommodation in Lijiang Old Town<span class="check-source-tag">Lijiang / Shangri-La</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-lj3" onchange="toggleCityTodo(4,&#39;lj3&#39;)">
+    <label for="cchk-lj3">Book Jade Dragon Snow Mountain cable car (book well in advance)<span class="check-source-tag">Lijiang / Shangri-La</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-lj4" onchange="toggleCityTodo(4,&#39;lj4&#39;)">
+    <label for="cchk-lj4">Plan Tiger Leaping Gorge hike or day trip<span class="check-source-tag">Lijiang / Shangri-La</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-lj5" onchange="toggleCityTodo(4,&#39;lj5&#39;)">
+    <label for="cchk-lj5">Plan Shangri-La day/overnight (altitude: 3200m, acclimatize)<span class="check-source-tag">Lijiang / Shangri-La</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-cd1" onchange="toggleCityTodo(5,&#39;cd1&#39;)">
+    <label for="cchk-cd1">Book transport TO Chengdu (from previous stop)<span class="check-source-tag">Chengdu</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-cd2" onchange="toggleCityTodo(5,&#39;cd2&#39;)">
+    <label for="cchk-cd2">Book accommodation in Chengdu (Jinli / Kuanzhai area)<span class="check-source-tag">Chengdu</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-cd3" onchange="toggleCityTodo(5,&#39;cd3&#39;)">
+    <label for="cchk-cd3">Book Giant Panda Base timed entry (book online in advance)<span class="check-source-tag">Chengdu</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-cd4" onchange="toggleCityTodo(5,&#39;cd4&#39;)">
+    <label for="cchk-cd4">Optional day trip: Leshan Giant Buddha (2.5 h from Chengdu)<span class="check-source-tag">Chengdu</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-xa1" onchange="toggleCityTodo(6,&#39;xa1&#39;)">
+    <label for="cchk-xa1">Book transport TO Xi'an (from previous stop)<span class="check-source-tag">Xi'an</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-xa2" onchange="toggleCityTodo(6,&#39;xa2&#39;)">
+    <label for="cchk-xa2">Book accommodation in Xi'an (near Bell Tower)<span class="check-source-tag">Xi'an</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-xa3" onchange="toggleCityTodo(6,&#39;xa3&#39;)">
+    <label for="cchk-xa3">Buy Terracotta Army ticket (book online — often sells out)<span class="check-source-tag">Xi'an</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-xa4" onchange="toggleCityTodo(6,&#39;xa4&#39;)">
+    <label for="cchk-xa4">City Wall bike rental or evening walk in Muslim Quarter<span class="check-source-tag">Xi'an</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-bj1" onchange="toggleCityTodo(7,&#39;bj1&#39;)">
+    <label for="cchk-bj1">Book transport TO Beijing (from previous stop)<span class="check-source-tag">Beijing</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-bj2" onchange="toggleCityTodo(7,&#39;bj2&#39;)">
+    <label for="cchk-bj2">Book accommodation in Beijing (near Forbidden City / Houhai)<span class="check-source-tag">Beijing</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-bj3" onchange="toggleCityTodo(7,&#39;bj3&#39;)">
+    <label for="cchk-bj3">Book Forbidden City timed entry — mandatory, book online<span class="check-source-tag">Beijing</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-bj4" onchange="toggleCityTodo(7,&#39;bj4&#39;)">
+    <label for="cchk-bj4">Book Great Wall day trip (Mutianyu recommended)<span class="check-source-tag">Beijing</span></label>
+  </div><div class="check-item ">
+    <input type="checkbox" id="cchk-bj5" onchange="toggleCityTodo(7,&#39;bj5&#39;)">
+    <label for="cchk-bj5">Check return flight time — book airport transfer in advance<span class="check-source-tag">Beijing</span></label>
+  </div></div></div></div>
+  </div>
+
+  <div id="tab-budget" class="tab-panel">
+    <div class="section-head"><div class="section-title">Budget planner</div><div class="section-sub">Transport costs update from selected options · synced live</div></div>
+    <div class="currency-row">Currency:
+      <select id="currencySelect" onchange="updateBudgetDisplay()">
+        <option value="EUR">€ EUR</option><option value="USD">$ USD</option>
+        <option value="CNY">¥ CNY</option><option value="GBP">£ GBP</option>
+      </select>
+    </div>
+    <div class="transport-budget-note" id="transportBudgetNote">Internal transport total: €650. Legs: Shanghai→Yangshuo (🚄€100) · Yangshuo→Zhangjiajie (✈️€140) · Zhangjiajie→Lijiang (✈️€180) · Lijiang→Chengdu (✈️€90) · Chengdu→Xi'an (🚄€60) · Xi'an→Beijing (🚄€80).</div>
+    <div class="budget-grid">
+      <div><div class="budget-table">
+        <div class="budget-table-head"><span>Category</span><span>Amount</span></div>
+        <div id="budgetRows"><div class="budget-row-item"><div class="budget-cat-name">Flights (return x2)</div>
+      <input class="budget-amt-input" type="number" value="1600" min="0" onchange="budgetItems[0].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Internal transport<div class="budget-transport-sub">auto-calculated from selected options</div></div>
+      <input class="budget-amt-input" type="number" value="670" min="0" onchange="budgetItems[1].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Accommodation</div>
+      <input class="budget-amt-input" type="number" value="1400" min="0" onchange="budgetItems[2].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Food &amp; drinks</div>
+      <input class="budget-amt-input" type="number" value="800" min="0" onchange="budgetItems[3].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Activities &amp; tours</div>
+      <input class="budget-amt-input" type="number" value="600" min="0" onchange="budgetItems[4].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Shopping</div>
+      <input class="budget-amt-input" type="number" value="300" min="0" onchange="budgetItems[5].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div><div class="budget-row-item"><div class="budget-cat-name">Buffer / emergencies</div>
+      <input class="budget-amt-input" type="number" value="350" min="0" onchange="budgetItems[6].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();"></div></div>
+        <div class="budget-total-row"><span>Total</span><span id="budgetTotal">€5,700</span></div>
+      </div></div>
+      <div class="budget-summary">
+        <h3>Overview</h3>
+        <canvas id="budgetChart" width="110" height="110" style="display:block;margin:0 auto .9rem;"></canvas>
+        <div class="budget-legend" id="budgetLegend"><div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div><span style="color:var(--ink2);font-size:11px;">Flights (return x2)</span><span class="legend-pct">€1,600</span></div><div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div><span style="color:var(--ink2);font-size:11px;">Internal transport</span><span class="legend-pct">€650</span></div><div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div><span style="color:var(--ink2);font-size:11px;">Accommodation</span><span class="legend-pct">€1,400</span></div><div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div><span style="color:var(--ink2);font-size:11px;">Food &amp; drinks</span><span class="legend-pct">€800</span></div><div class="legend-item"><div class="legend-dot" style="background:#D4537E"></div><span style="color:var(--ink2);font-size:11px;">Activities &amp; tours</span><span class="legend-pct">€600</span></div><div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div><span style="color:var(--ink2);font-size:11px;">Shopping</span><span class="legend-pct">€300</span></div><div class="legend-item"><div class="legend-dot" style="background:#888780"></div><span style="color:var(--ink2);font-size:11px;">Buffer / emergencies</span><span class="legend-pct">€350</span></div></div>
+        <div class="budget-summary-totals">
+          <div class="total-line"><span>Per person</span><span id="perPerson">€2,850</span></div>
+          <div class="total-line"><span>Per day (2 pax)</span><span id="perDay">€285</span></div>
+          <div class="total-line big"><span>Total trip</span><span id="totalTrip">€5,700</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-packing" class="tab-panel">
+    <div class="section-head"><div class="section-title">Packing list</div><div class="section-sub">Tailored for late-summer China travel</div></div>
+    <div class="packing-grid" id="packingGrid"><div class="pack-card"><div class="pack-card-title">👔 Clothing</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-0-0" onchange="togglePacking(&#39;0-0&#39;,this.checked)">
+        <label for="pk-0-0">Lightweight t-shirts x6</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-1" onchange="togglePacking(&#39;0-1&#39;,this.checked)">
+        <label for="pk-0-1">Long-sleeve layer x2</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-2" onchange="togglePacking(&#39;0-2&#39;,this.checked)">
+        <label for="pk-0-2">Light rain jacket</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-3" onchange="togglePacking(&#39;0-3&#39;,this.checked)">
+        <label for="pk-0-3">Walking shoes</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-4" onchange="togglePacking(&#39;0-4&#39;,this.checked)">
+        <label for="pk-0-4">Sandals</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-5" onchange="togglePacking(&#39;0-5&#39;,this.checked)">
+        <label for="pk-0-5">Underwear x7</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-6" onchange="togglePacking(&#39;0-6&#39;,this.checked)">
+        <label for="pk-0-6">Socks x7</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-7" onchange="togglePacking(&#39;0-7&#39;,this.checked)">
+        <label for="pk-0-7">Swimwear</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-8" onchange="togglePacking(&#39;0-8&#39;,this.checked)">
+        <label for="pk-0-8">Smart outfit for evenings</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-0-9" onchange="togglePacking(&#39;0-9&#39;,this.checked)">
+        <label for="pk-0-9">Sun hat / cap</label>
+      </div></div></div><div class="pack-card"><div class="pack-card-title">💊 Health</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-1-0" onchange="togglePacking(&#39;1-0&#39;,this.checked)">
+        <label for="pk-1-0">Motion sickness pills</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-1" onchange="togglePacking(&#39;1-1&#39;,this.checked)">
+        <label for="pk-1-1">Altitude meds (Shangri-La)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-2" onchange="togglePacking(&#39;1-2&#39;,this.checked)">
+        <label for="pk-1-2">Ibuprofen &amp; paracetamol</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-3" onchange="togglePacking(&#39;1-3&#39;,this.checked)">
+        <label for="pk-1-3">Diarrhea medication</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-4" onchange="togglePacking(&#39;1-4&#39;,this.checked)">
+        <label for="pk-1-4">Hand sanitizer</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-5" onchange="togglePacking(&#39;1-5&#39;,this.checked)">
+        <label for="pk-1-5">Insect repellent</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-6" onchange="togglePacking(&#39;1-6&#39;,this.checked)">
+        <label for="pk-1-6">Sunscreen SPF50+</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-7" onchange="togglePacking(&#39;1-7&#39;,this.checked)">
+        <label for="pk-1-7">Blister plasters</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-1-8" onchange="togglePacking(&#39;1-8&#39;,this.checked)">
+        <label for="pk-1-8">Personal prescriptions</label>
+      </div></div></div><div class="pack-card"><div class="pack-card-title">🔌 Tech</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-2-0" onchange="togglePacking(&#39;2-0&#39;,this.checked)">
+        <label for="pk-2-0">Travel adapter (China Type A/I)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-1" onchange="togglePacking(&#39;2-1&#39;,this.checked)">
+        <label for="pk-2-1">Power bank (10000mAh+)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-2" onchange="togglePacking(&#39;2-2&#39;,this.checked)">
+        <label for="pk-2-2">Phone (offline maps)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-3" onchange="togglePacking(&#39;2-3&#39;,this.checked)">
+        <label for="pk-2-3">Camera &amp; memory cards</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-4" onchange="togglePacking(&#39;2-4&#39;,this.checked)">
+        <label for="pk-2-4">Headphones</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-5" onchange="togglePacking(&#39;2-5&#39;,this.checked)">
+        <label for="pk-2-5">USB cables</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-2-6" onchange="togglePacking(&#39;2-6&#39;,this.checked)">
+        <label for="pk-2-6">VPN installed on all devices</label>
+      </div></div></div><div class="pack-card"><div class="pack-card-title">📄 Documents</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-3-0" onchange="togglePacking(&#39;3-0&#39;,this.checked)">
+        <label for="pk-3-0">Passports (x2)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-1" onchange="togglePacking(&#39;3-1&#39;,this.checked)">
+        <label for="pk-3-1">Travel insurance documents</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-2" onchange="togglePacking(&#39;3-2&#39;,this.checked)">
+        <label for="pk-3-2">Emergency contacts (printed)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-3" onchange="togglePacking(&#39;3-3&#39;,this.checked)">
+        <label for="pk-3-3">Hotel confirmations all cities</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-4" onchange="togglePacking(&#39;3-4&#39;,this.checked)">
+        <label for="pk-3-4">Cash CNY</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-5" onchange="togglePacking(&#39;3-5&#39;,this.checked)">
+        <label for="pk-3-5">International SIM / eSIM</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-3-6" onchange="togglePacking(&#39;3-6&#39;,this.checked)">
+        <label for="pk-3-6">Offline copies of all bookings</label>
+      </div></div></div><div class="pack-card"><div class="pack-card-title">🎒 Essentials</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-4-0" onchange="togglePacking(&#39;4-0&#39;,this.checked)">
+        <label for="pk-4-0">Daypack for excursions</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-1" onchange="togglePacking(&#39;4-1&#39;,this.checked)">
+        <label for="pk-4-1">Reusable water bottle</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-2" onchange="togglePacking(&#39;4-2&#39;,this.checked)">
+        <label for="pk-4-2">Padlock for lockers</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-3" onchange="togglePacking(&#39;4-3&#39;,this.checked)">
+        <label for="pk-4-3">Earplugs</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-4" onchange="togglePacking(&#39;4-4&#39;,this.checked)">
+        <label for="pk-4-4">Sleep mask</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-5" onchange="togglePacking(&#39;4-5&#39;,this.checked)">
+        <label for="pk-4-5">Lightweight towel</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-4-6" onchange="togglePacking(&#39;4-6&#39;,this.checked)">
+        <label for="pk-4-6">Laundry bag</label>
+      </div></div></div><div class="pack-card"><div class="pack-card-title">🌿 Comfort</div><div class="pack-items">
+      <div class="pack-item ">
+        <input type="checkbox" id="pk-5-0" onchange="togglePacking(&#39;5-0&#39;,this.checked)">
+        <label for="pk-5-0">Lip balm (dry mountain air)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-1" onchange="togglePacking(&#39;5-1&#39;,this.checked)">
+        <label for="pk-5-1">Wet wipes</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-2" onchange="togglePacking(&#39;5-2&#39;,this.checked)">
+        <label for="pk-5-2">Tissues (public toilets!)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-3" onchange="togglePacking(&#39;5-3&#39;,this.checked)">
+        <label for="pk-5-3">First-aid kit</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-4" onchange="togglePacking(&#39;5-4&#39;,this.checked)">
+        <label for="pk-5-4">Snacks for journeys</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-5" onchange="togglePacking(&#39;5-5&#39;,this.checked)">
+        <label for="pk-5-5">Pleco translation app (offline)</label>
+      </div><div class="pack-item ">
+        <input type="checkbox" id="pk-5-6" onchange="togglePacking(&#39;5-6&#39;,this.checked)">
+        <label for="pk-5-6">Notebook &amp; pen</label>
+      </div></div></div></div>
+  </div>
+
+  <div id="tab-tips" class="tab-panel">
+    <div class="section-head"><div class="section-title">Essential China tips</div><div class="section-sub">Practical info for European travellers in 2025</div></div>
+    <div class="tips-grid" id="tipsGrid"><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">📱</span><span class="tip-card-title">Apps &amp; internet</span></div><ul class="tip-list"><li>Install VPN <strong>before</strong> entering China — Google, Instagram, WhatsApp are blocked</li><li>WeChat: messaging, maps, payments, QR codes — essential</li><li>Alipay works for foreigners with foreign card — set up at home</li><li>Offline maps: <span class="tip-highlight">Maps.me</span> or Baidu Maps</li><li>Google Translate offline Chinese pack: download before you go</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">💳</span><span class="tip-card-title">Money &amp; payments</span></div><ul class="tip-list"><li>Nearly cashless — WeChat Pay or Alipay accepted almost everywhere</li><li>Carry some Yuan cash for rural areas and markets</li><li>ATMs in cities accept Visa/Mastercard</li><li>1 EUR ≈ 7.8 CNY — always negotiate at markets</li><li>Tipping is not expected in China</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">🚆</span><span class="tip-card-title">Getting around</span></div><ul class="tip-list"><li>High-speed trains (G/D trains) excellent between major cities</li><li>Book on Trip.com — no VPN needed</li><li>Didi is the Chinese Uber — works with foreign cards</li><li>Domestic flights cheap on <span class="tip-highlight">Trip.com</span></li><li>Zhangjiajie &amp; Yangshuo best reached by flight + local bus</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">🍜</span><span class="tip-card-title">Food &amp; drink</span></div><ul class="tip-list"><li>Tap water not drinkable — always bottled or boiled</li><li>Street food is safe and fantastic — look for busy stalls</li><li>Vegetarian: say <em>"wǒ chī sù"</em> (我吃素)</li><li>Sichuan food genuinely spicy — order medium if sensitive</li><li>Supermarkets great for snacks and toiletries</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">🏥</span><span class="tip-card-title">Health &amp; safety</span></div><ul class="tip-list"><li>Shangri-La altitude ~3200m — take it slow the first day</li><li>Air quality varies — Shanghai/Beijing can have poor AQI days</li><li>Travel insurance with medical cover essential</li><li>Emergency: 110 (police), 120 (ambulance)</li><li>Pharmacies (药店) everywhere and well-stocked</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">🗣</span><span class="tip-card-title">Culture &amp; language</span></div><ul class="tip-list"><li>Basics: <em>xièxie</em> (谢谢) = thank you, <em>nǐ hǎo</em> = hello</li><li>Mandarin standard — locals appreciate any effort</li><li>Bargaining at markets: start at 30–40% of asking price</li><li>Temples: cover shoulders and knees</li><li>Photographing people: ask first (<em>"kě yǐ pāi zhào ma?"</em>)</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">📍</span><span class="tip-card-title">Practical bits</span></div><ul class="tip-list"><li>Public toilets everywhere — bring tissues &amp; sanitizer</li><li>Squat toilets common outside tourist areas</li><li>China SIM: buy at airport on arrival (show passport)</li><li>Hotel check-in: passport always required by law</li><li>Book Great Wall &amp; Forbidden City in advance online</li></ul></div><div class="tip-card"><div class="tip-card-head"><span class="tip-card-icon">🌤</span><span class="tip-card-title">Weather late Aug–Sep</span></div><ul class="tip-list"><li>Shanghai: hot &amp; humid 28–34°C, some rain</li><li>Yangshuo / Guilin: warm 26–30°C, afternoon showers possible</li><li>Zhangjiajie: 22–28°C, often misty (great atmosphere)</li><li>Lijiang: pleasant 18–24°C, cooler at night</li><li>Shangri-La: cool 12–18°C — pack a warm layer</li><li>Beijing: warm &amp; clear 22–28°C, perfect autumn weather</li></ul></div></div>
+  </div>
+</main>
+</div>
+
+<!-- CITY MODAL -->
+<div class="modal-overlay" id="cityModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-color-dot" id="modalDot" style="background: rgb(127, 119, 221);"></div>
+      <div style="flex:1;">
+        <div class="modal-title" id="modalTitle">Shanghai</div>
+        <div class="modal-subtitle" id="modalSubtitle">4 nights · fixed</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">To-do for this stop</div>
+      <div class="modal-todo-list" id="modalTodoList">
+    <div class="modal-todo-item " id="mtodo-sh1">
+      <input type="checkbox" id="mchk-sh1" onchange="toggleCityTodo(1,&#39;sh1&#39;)">
+      <label for="mchk-sh1">Book accommodation in Shanghai (Bund / French Concession area)<span class="modal-todo-cat">🏨 hotel</span></label>
+      <button class="modal-del-btn" onclick="deleteCityTodo(1,&#39;sh1&#39;)">✕</button>
+    </div>
+    <div class="modal-todo-item " id="mtodo-sh2">
+      <input type="checkbox" id="mchk-sh2" onchange="toggleCityTodo(1,&#39;sh2&#39;)">
+      <label for="mchk-sh2">Arrange arrival transfer from Pudong airport (PVG)<span class="modal-todo-cat">✈ transport</span></label>
+      <button class="modal-del-btn" onclick="deleteCityTodo(1,&#39;sh2&#39;)">✕</button>
+    </div>
+    <div class="modal-todo-item " id="mtodo-sh3">
+      <input type="checkbox" id="mchk-sh3" onchange="toggleCityTodo(1,&#39;sh3&#39;)">
+      <label for="mchk-sh3">Pre-load WeChat &amp; Alipay before landing<span class="modal-todo-cat">📱 prep</span></label>
+      <button class="modal-del-btn" onclick="deleteCityTodo(1,&#39;sh3&#39;)">✕</button>
+    </div></div>
+      <div class="modal-add-row">
+        <input id="modalNewTodo" placeholder="Add a task…" onkeydown="if(event.key===&#39;Enter&#39;)addModalTodo()">
+        <button class="btn-primary" onclick="addModalTodo()">+</button>
+      </div>
+      <div class="modal-section-title" style="margin-top:1rem;">Notes</div>
+      <textarea class="modal-notes" id="modalNotes" placeholder="Any notes for this city…" oninput="saveModalNotes()"></textarea>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">🔄 Updated by your travel partner!</div>
+
+<script>
+/* ═══ FIREBASE INIT ═══ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBwSG1f6EBETSQ0Lo_LLcpm2BismJGg8l4",
+  authDomain: "china-trip-2026-683de.firebaseapp.com",
+  projectId: "china-trip-2026-683de",
+  storageBucket: "china-trip-2026-683de.firebasestorage.app",
+  messagingSenderId: "571993963580",
+  appId: "1:571993963580:web:488b746ca98cfadde9d739"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const DOC = db.collection('trip').doc('data');
+
+/* ═══ SYNC STATUS ═══ */
+let saveTimer=null;
+function setSyncStatus(s){
+  const el=document.getElementById('syncStatus');
+  if(s==='saving'){el.className='sync-status saving';el.textContent='⟳ Saving…';}
+  else if(s==='synced'){el.className='sync-status synced';el.textContent='✓ Synced';}
+  else{el.className='sync-status error';el.textContent='⚠ Sync error';}
+}
+function scheduleSave(){
+  setSyncStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>saveToFirebase(),800);
+}
+
+async function saveToFirebase(){
+  try{
+    await DOC.set({cities,transports,checklists,budgetItems,cityTodos,packingState});
+    setSyncStatus('synced');
+  }catch(e){
+    console.error(e);setSyncStatus('error');
+  }
+}
+
+/* ═══ DEFAULT DATA ═══ */
+let cities=[
+  {id:1,name:'Shanghai',nights:4,status:'fixed',color:'#7F77DD',lat:31.23,lng:121.47,highlights:['The Bund','Yu Garden','French Concession','Xintiandi'],notes:'Arrival city. Book hotel near the Bund or French Concession.'},
+  {id:2,name:'Yangshuo',nights:4,status:'fixed',color:'#1D9E75',lat:24.78,lng:110.49,highlights:['Li River cruise from Guilin','Karst mountains','Moon Hill','Bike the countryside'],notes:'Guilin airport is 1.5 h from Yangshuo by bus/taxi.'},
+  {id:3,name:'Zhangjiajie',nights:3,status:'fixed',color:'#c0392b',lat:29.12,lng:110.48,highlights:['Avatar mountains','Glass bridge','Tianmen Mountain','Yuanjiajie'],notes:'Best to fly. 3 nights recommended to see everything.'},
+  {id:4,name:'Lijiang / Shangri-La',nights:4,status:'fixed',color:'#BA7517',lat:26.87,lng:100.23,highlights:['Old Town Lijiang','Jade Dragon Snow Mountain','Shangri-La old town','Tiger Leaping Gorge'],notes:'High altitude in Shangri-La (~3200m) — acclimatize first.'},
+  {id:5,name:'Chengdu',nights:3,status:'optional',color:'#D4537E',lat:30.57,lng:104.07,highlights:['Giant Panda Base','Sichuan hotpot','Leshan Giant Buddha'],notes:'Optional detour. Amazing food and pandas.'},
+  {id:6,name:"Xi'an",nights:2,status:'optional',color:'#888780',lat:34.27,lng:108.93,highlights:['Terracotta Army','Ancient City Wall','Muslim Quarter'],notes:"Optional. Terracotta Army is unmissable if you go."},
+  {id:7,name:'Beijing',nights:4,status:'fixed',color:'#185FA5',lat:39.91,lng:116.39,highlights:['Great Wall','Forbidden City','Temple of Heaven','Summer Palace'],notes:'Departure city. Build in buffer before flight.'},
+];
+let nextId=8;
+const COLORS=['#7F77DD','#1D9E75','#c0392b','#BA7517','#D4537E','#185FA5','#888780','#2d6a4f','#b8860b'];
+
+let cityTodos={
+  1:[{id:'sh1',text:'Book accommodation in Shanghai (Bund / French Concession area)',done:false,cat:'hotel'},{id:'sh2',text:'Arrange arrival transfer from Pudong airport (PVG)',done:false,cat:'transport'},{id:'sh3',text:'Pre-load WeChat & Alipay before landing',done:false,cat:'prep'}],
+  2:[{id:'ys1',text:'Book transport TO Yangshuo (fly Shanghai → Guilin KWL, then bus)',done:false,cat:'transport'},{id:'ys2',text:'Book accommodation in Yangshuo (Old Street area)',done:false,cat:'hotel'},{id:'ys3',text:'Buy Li River cruise ticket (Guilin → Yangshuo)',done:false,cat:'tickets'},{id:'ys4',text:'Arrange Guilin airport → Yangshuo transfer (~1.5 h)',done:false,cat:'transport'}],
+  3:[{id:'zjj1',text:'Book transport TO Zhangjiajie (fly Guilin → DYG via Changsha)',done:false,cat:'transport'},{id:'zjj2',text:'Book accommodation near Zhangjiajie park entrance',done:false,cat:'hotel'},{id:'zjj3',text:'Buy Zhangjiajie National Forest Park ticket (book online)',done:false,cat:'tickets'},{id:'zjj4',text:'Book Tianmen Mountain / cable car ticket',done:false,cat:'tickets'},{id:'zjj5',text:'Check glass bridge booking (limited slots)',done:false,cat:'tickets'}],
+  4:[{id:'lj1',text:'Book transport TO Lijiang (fly DYG → LJG via Kunming or Chengdu)',done:false,cat:'transport'},{id:'lj2',text:'Book accommodation in Lijiang Old Town',done:false,cat:'hotel'},{id:'lj3',text:'Book Jade Dragon Snow Mountain cable car (book well in advance)',done:false,cat:'tickets'},{id:'lj4',text:'Plan Tiger Leaping Gorge hike or day trip',done:false,cat:'activities'},{id:'lj5',text:'Plan Shangri-La day/overnight (altitude: 3200m, acclimatize)',done:false,cat:'activities'}],
+  5:[{id:'cd1',text:'Book transport TO Chengdu (from previous stop)',done:false,cat:'transport'},{id:'cd2',text:'Book accommodation in Chengdu (Jinli / Kuanzhai area)',done:false,cat:'hotel'},{id:'cd3',text:'Book Giant Panda Base timed entry (book online in advance)',done:false,cat:'tickets'},{id:'cd4',text:'Optional day trip: Leshan Giant Buddha (2.5 h from Chengdu)',done:false,cat:'activities'}],
+  6:[{id:'xa1',text:"Book transport TO Xi'an (from previous stop)",done:false,cat:'transport'},{id:'xa2',text:"Book accommodation in Xi'an (near Bell Tower)",done:false,cat:'hotel'},{id:'xa3',text:'Buy Terracotta Army ticket (book online — often sells out)',done:false,cat:'tickets'},{id:'xa4',text:'City Wall bike rental or evening walk in Muslim Quarter',done:false,cat:'activities'}],
+  7:[{id:'bj1',text:'Book transport TO Beijing (from previous stop)',done:false,cat:'transport'},{id:'bj2',text:'Book accommodation in Beijing (near Forbidden City / Houhai)',done:false,cat:'hotel'},{id:'bj3',text:'Book Forbidden City timed entry — mandatory, book online',done:false,cat:'tickets'},{id:'bj4',text:'Book Great Wall day trip (Mutianyu recommended)',done:false,cat:'tickets'},{id:'bj5',text:'Check return flight time — book airport transfer in advance',done:false,cat:'transport'}],
+};
+
+let transports={
+  '1-2':{recommended:1,selected:1,options:[{mode:'train',icon:'🚄',label:'High-speed to Guilin, bus to Yangshuo',duration:'9–11 h total',price:100,note:'G-train Shanghai→Guilin, then 1.5 h bus.'},{mode:'flight',icon:'✈️',label:'Fly Shanghai → Guilin (KWL), bus to Yangshuo',duration:'~3.5 h door-to-door',price:120,note:'Faster and similar price. Recommended.'}]},
+  '1-3':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Shanghai → Zhangjiajie (DYG)',duration:'~2.5 h direct',price:130,note:'Direct flights available.'}]},
+  '1-4':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Shanghai → Lijiang (LJG)',duration:'~3 h',price:200,note:'Check for direct flights on Trip.com.'}]},
+  '1-5':{recommended:1,selected:1,options:[{mode:'train',icon:'🚄',label:'High-speed train Shanghai → Chengdu',duration:'~11 h',price:120,note:'Overnight option available.'},{mode:'flight',icon:'✈️',label:'Fly Shanghai → Chengdu (CTU)',duration:'~2.5 h',price:110,note:'Many daily flights.'}]},
+  '1-6':{recommended:1,selected:1,options:[{mode:'train',icon:'🚄',label:'High-speed train Shanghai → Xi\'an',duration:'~6–7 h',price:120,note:'Good fast train option.'},{mode:'flight',icon:'✈️',label:"Fly Shanghai → Xi'an (XIY)",duration:'~2 h',price:100,note:'Frequent flights.'}]},
+  '1-7':{recommended:1,selected:1,options:[{mode:'train',icon:'🚄',label:'High-speed train Shanghai → Beijing',duration:'~4.5 h',price:100,note:"One of China's great fast train routes."},{mode:'flight',icon:'✈️',label:'Fly Shanghai → Beijing (PEK)',duration:'~2.5 h',price:90,note:'Plentiful flights.'}]},
+  '2-3':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Guilin (KWL) → Zhangjiajie (DYG) via Changsha',duration:'~3.5 h incl. connection',price:140,note:'Only realistic option.'}]},
+  '2-4':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Guilin (KWL) → Lijiang (LJG) via Kunming',duration:'~4 h incl. connection',price:170,note:'Connection via Kunming most common.'}]},
+  '2-5':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Guilin (KWL) → Chengdu (CTU)',duration:'~2 h direct',price:110,note:'Good direct flights available.'}]},
+  '2-6':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:"Fly Guilin (KWL) → Xi'an (XIY)",duration:'~2.5 h',price:130,note:'Some go via Chengdu.'}]},
+  '2-7':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Guilin (KWL) → Beijing (PEK)',duration:'~3 h direct',price:180,note:'Good direct options.'}]},
+  '3-4':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Zhangjiajie (DYG) → Lijiang (LJG) via Kunming/Chengdu',duration:'~4–5 h incl. connection',price:180,note:'No direct. Book early on Trip.com.'}]},
+  '3-5':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Zhangjiajie (DYG) → Chengdu (CTU)',duration:'~1.5 h direct',price:100,note:'Good direct options.'}]},
+  '3-6':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:"Fly Zhangjiajie (DYG) → Xi'an (XIY) via Changsha",duration:'~3 h',price:130,note:'Connection via Changsha.'}]},
+  '3-7':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Zhangjiajie (DYG) → Beijing (PEK)',duration:'~2.5 h direct',price:160,note:'Direct flights exist.'}]},
+  '4-5':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Lijiang (LJG) → Chengdu (CTU)',duration:'~1.5 h',price:90,note:'Short hop, often cheap.'}]},
+  '4-6':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:"Fly Lijiang (LJG) → Xi'an (XIY) via Kunming/Chengdu",duration:'~4 h incl. connection',price:200,note:'Multi-stop.'}]},
+  '4-7':{recommended:0,selected:0,options:[{mode:'flight',icon:'✈️',label:'Fly Lijiang (LJG) → Beijing (PEK)',duration:'~3.5 h',price:200,note:'Check Trip.com for direct options.'}]},
+  '5-6':{recommended:0,selected:0,options:[{mode:'train',icon:'🚄',label:"High-speed train Chengdu → Xi'an",duration:'~3.5 h',price:60,note:'Best option. City-centre to city-centre.'},{mode:'flight',icon:'✈️',label:"Fly Chengdu (CTU) → Xi'an (XIY)",duration:'~1.5 h + transfers',price:80,note:'Train more convenient overall.'}]},
+  '5-7':{recommended:1,selected:1,options:[{mode:'train',icon:'🚄',label:'High-speed train Chengdu → Beijing',duration:'~8 h',price:100,note:'Overnight option available.'},{mode:'flight',icon:'✈️',label:'Fly Chengdu (CTU) → Beijing (PEK)',duration:'~2.5 h',price:120,note:'Many daily flights.'}]},
+  '6-7':{recommended:0,selected:0,options:[{mode:'train',icon:'🚄',label:"High-speed train Xi'an → Beijing",duration:'~4.5 h',price:80,note:'Superb G-train. Most convenient.'},{mode:'flight',icon:'✈️',label:"Fly Xi'an (XIY) → Beijing (PEK)",duration:'~2 h + transfers',price:90,note:'Similar total time with transfers.'}]},
+};
+
+let checklists={
+  'Before you go':[
+    {id:'c1',text:'International flights booked (PVG in, PEK out)',done:false},
+    {id:'c2',text:'Travel insurance with medical & evacuation cover',done:false},
+    {id:'c3',text:'VPN app installed & tested (before entering China!)',done:false},
+    {id:'c4',text:'Register on WeChat — link to European bank card',done:false},
+    {id:'c5',text:'Set up Alipay with foreign card (easier at home)',done:false},
+    {id:'c6',text:'Notify bank of travel to China (avoid card blocks)',done:false},
+    {id:'c7',text:'Download Google Translate offline Chinese pack',done:false},
+    {id:'c8',text:'Download Maps.me or HERE with China offline maps',done:false},
+    {id:'c9',text:'Install Trip.com for domestic trains & flights',done:false},
+    {id:'c10',text:'Buy some Yuan cash (CNY) before departure',done:false},
+  ],
+  'Health & documents':[
+    {id:'ch1',text:'Passports valid 6+ months beyond Sep 19, 2025',done:false},
+    {id:'ch2',text:'International SIM card or eSIM ordered (e.g. Airalo)',done:false},
+    {id:'ch3',text:'Altitude sickness medication (for Shangri-La ~3200m)',done:false},
+    {id:'ch4',text:'Doctor visit if needed for altitude meds (Diamox prescription)',done:false},
+    {id:'ch5',text:'Routine vaccinations up to date (Hep A, Typhoid recommended)',done:false},
+    {id:'ch6',text:"Travel health advisory check (ECDC / your country's health site)",done:false},
+    {id:'ch7',text:'Emergency contacts printed and saved offline',done:false},
+    {id:'ch8',text:'Travel insurance documents printed / saved offline',done:false},
+  ],
+};
+
+let budgetItems=[
+  {cat:'Flights (return x2)',amount:1600},
+  {cat:'Internal transport',amount:0,isTransport:true},
+  {cat:'Accommodation',amount:1400},
+  {cat:'Food & drinks',amount:800},
+  {cat:'Activities & tours',amount:600},
+  {cat:'Shopping',amount:300},
+  {cat:'Buffer / emergencies',amount:350},
+];
+const catColors=['#7F77DD','#c0392b','#1D9E75','#BA7517','#D4537E','#185FA5','#888780','#2d6a4f'];
+
+let packingState={};
+
+const packingData=[
+  {title:'👔 Clothing',items:['Lightweight t-shirts x6','Long-sleeve layer x2','Light rain jacket','Walking shoes','Sandals','Underwear x7','Socks x7','Swimwear','Smart outfit for evenings','Sun hat / cap']},
+  {title:'💊 Health',items:['Motion sickness pills','Altitude meds (Shangri-La)','Ibuprofen & paracetamol','Diarrhea medication','Hand sanitizer','Insect repellent','Sunscreen SPF50+','Blister plasters','Personal prescriptions']},
+  {title:'🔌 Tech',items:['Travel adapter (China Type A/I)','Power bank (10000mAh+)','Phone (offline maps)','Camera & memory cards','Headphones','USB cables','VPN installed on all devices']},
+  {title:'📄 Documents',items:['Passports (x2)','Travel insurance documents','Emergency contacts (printed)','Hotel confirmations all cities','Cash CNY','International SIM / eSIM','Offline copies of all bookings']},
+  {title:'🎒 Essentials',items:['Daypack for excursions','Reusable water bottle','Padlock for lockers','Earplugs','Sleep mask','Lightweight towel','Laundry bag']},
+  {title:'🌿 Comfort',items:['Lip balm (dry mountain air)','Wet wipes','Tissues (public toilets!)','First-aid kit','Snacks for journeys','Pleco translation app (offline)','Notebook & pen']},
+];
+
+const tipsData=[
+  {icon:'📱',title:'Apps & internet',tips:['Install VPN <strong>before</strong> entering China — Google, Instagram, WhatsApp are blocked','WeChat: messaging, maps, payments, QR codes — essential','Alipay works for foreigners with foreign card — set up at home','Offline maps: <span class="tip-highlight">Maps.me</span> or Baidu Maps','Google Translate offline Chinese pack: download before you go']},
+  {icon:'💳',title:'Money & payments',tips:["Nearly cashless — WeChat Pay or Alipay accepted almost everywhere","Carry some Yuan cash for rural areas and markets","ATMs in cities accept Visa/Mastercard","1 EUR ≈ 7.8 CNY — always negotiate at markets","Tipping is not expected in China"]},
+  {icon:'🚆',title:'Getting around',tips:['High-speed trains (G/D trains) excellent between major cities','Book on Trip.com — no VPN needed','Didi is the Chinese Uber — works with foreign cards','Domestic flights cheap on <span class="tip-highlight">Trip.com</span>','Zhangjiajie & Yangshuo best reached by flight + local bus']},
+  {icon:'🍜',title:'Food & drink',tips:['Tap water not drinkable — always bottled or boiled','Street food is safe and fantastic — look for busy stalls','Vegetarian: say <em>"wǒ chī sù"</em> (我吃素)','Sichuan food genuinely spicy — order medium if sensitive','Supermarkets great for snacks and toiletries']},
+  {icon:'🏥',title:'Health & safety',tips:['Shangri-La altitude ~3200m — take it slow the first day','Air quality varies — Shanghai/Beijing can have poor AQI days','Travel insurance with medical cover essential','Emergency: 110 (police), 120 (ambulance)','Pharmacies (药店) everywhere and well-stocked']},
+  {icon:'🗣',title:'Culture & language',tips:['Basics: <em>xièxie</em> (谢谢) = thank you, <em>nǐ hǎo</em> = hello','Mandarin standard — locals appreciate any effort','Bargaining at markets: start at 30–40% of asking price','Temples: cover shoulders and knees','Photographing people: ask first (<em>"kě yǐ pāi zhào ma?"</em>)']},
+  {icon:'📍',title:'Practical bits',tips:['Public toilets everywhere — bring tissues & sanitizer','Squat toilets common outside tourist areas','China SIM: buy at airport on arrival (show passport)','Hotel check-in: passport always required by law','Book Great Wall & Forbidden City in advance online']},
+  {icon:'🌤',title:'Weather late Aug–Sep',tips:['Shanghai: hot & humid 28–34°C, some rain','Yangshuo / Guilin: warm 26–30°C, afternoon showers possible','Zhangjiajie: 22–28°C, often misty (great atmosphere)','Lijiang: pleasant 18–24°C, cooler at night','Shangri-La: cool 12–18°C — pack a warm layer','Beijing: warm & clear 22–28°C, perfect autumn weather']},
+];
+
+/* ═══ FIREBASE LOAD & LISTEN ═══ */
+let isRemoteUpdate=false;
+
+async function initFromFirebase(){
+  try{
+    // Try to load existing data
+    const snap=await DOC.get();
+    if(snap.exists){
+      const d=snap.data();
+      if(d.cities) cities=d.cities;
+      if(d.transports) transports=d.transports;
+      if(d.checklists) checklists=d.checklists;
+      if(d.budgetItems) budgetItems=d.budgetItems;
+      if(d.cityTodos) cityTodos=d.cityTodos;
+      if(d.packingState) packingState=d.packingState;
+      nextId=Math.max(...cities.map(c=>c.id))+1;
+    } else {
+      // First time — write defaults
+      await saveToFirebase();
+    }
+  }catch(e){
+    console.error('Firebase load error:',e);
+    showToast('⚠ Could not connect to Firebase. Working offline.');
+  }
+
+  // Render everything
+  renderCities();renderChecklist();renderBudget();renderPacking();renderTips();
+  document.getElementById('loadingOverlay').style.display='none';
+
+  // Start real-time listener
+  DOC.onSnapshot(snap=>{
+    if(!snap.exists||isRemoteUpdate) return;
+    const d=snap.data();
+    // Only update if this came from the other person (not ourselves)
+    let changed=false;
+    if(JSON.stringify(d.cities)!==JSON.stringify(cities)){cities=d.cities;changed=true;}
+    if(JSON.stringify(d.checklists)!==JSON.stringify(checklists)){checklists=d.checklists;changed=true;}
+    if(JSON.stringify(d.budgetItems)!==JSON.stringify(budgetItems)){budgetItems=d.budgetItems;changed=true;}
+    if(JSON.stringify(d.cityTodos)!==JSON.stringify(cityTodos)){cityTodos=d.cityTodos;changed=true;}
+    if(JSON.stringify(d.transports)!==JSON.stringify(transports)){transports=d.transports;changed=true;}
+    if(JSON.stringify(d.packingState)!==JSON.stringify(packingState)){packingState=d.packingState;changed=true;}
+    if(changed){
+      nextId=Math.max(...cities.map(c=>c.id))+1;
+      renderCities();renderChecklist();renderBudget();renderPacking();
+      if(leafletMap) renderMap();
+      showToast('🔄 Updated by your travel partner!');
+    }
+  });
+}
+
+/* ═══ TRANSPORT HELPERS ═══ */
+function getLeg(fromId,toId){
+  const k1=fromId+'-'+toId,k2=toId+'-'+fromId;
+  if(transports[k1]) return {leg:transports[k1],key:k1};
+  if(transports[k2]) return {leg:transports[k2],key:k2};
+  return null;
+}
+function selectTransportOption(key,optIdx){
+  if(transports[key]){transports[key].selected=optIdx;renderCities();renderMap();scheduleSave();}
+}
+function calcTransportTotal(){
+  let t=0;
+  const active=cities.filter(c=>c.nights>0);
+  for(let i=0;i<active.length-1;i++){
+    const r=getLeg(active[i].id,active[i+1].id);
+    if(r) t+=(r.leg.options[r.leg.selected]?.price||0);
+  }
+  return t;
+}
+
+/* ═══ MODAL ═══ */
+let modalCityId=null;
+function openModal(cityId){
+  modalCityId=cityId;
+  const city=cities.find(c=>c.id===cityId);if(!city)return;
+  document.getElementById('modalDot').style.background=city.color;
+  document.getElementById('modalTitle').textContent=city.name;
+  document.getElementById('modalSubtitle').textContent=city.nights>0?`${city.nights} nights · ${city.status}`:'Parked — not yet scheduled';
+  document.getElementById('modalNotes').value=city.notes||'';
+  renderModalTodos(cityId);
+  document.getElementById('cityModal').classList.add('open');
+  setTimeout(()=>document.getElementById('modalNewTodo').focus(),200);
+}
+function closeModal(){document.getElementById('cityModal').classList.remove('open');modalCityId=null;}
+const catLabel={transport:'✈ transport',hotel:'🏨 hotel',tickets:'🎟 tickets',activities:'🥾 activities',prep:'📱 prep'};
+function renderModalTodos(cityId){
+  const todos=cityTodos[cityId]||[];
+  document.getElementById('modalTodoList').innerHTML=todos.map(t=>`
+    <div class="modal-todo-item ${t.done?'done':''}" id="mtodo-${t.id}">
+      <input type="checkbox" id="mchk-${t.id}" ${t.done?'checked':''} onchange="toggleCityTodo(${cityId},'${t.id}')">
+      <label for="mchk-${t.id}">${t.text}${t.cat?`<span class="modal-todo-cat">${catLabel[t.cat]||t.cat}</span>`:''}</label>
+      <button class="modal-del-btn" onclick="deleteCityTodo(${cityId},'${t.id}')">✕</button>
+    </div>`).join('');
+}
+function toggleCityTodo(cityId,todoId){
+  const t=(cityTodos[cityId]||[]).find(x=>x.id===todoId);
+  if(t){t.done=!t.done;renderModalTodos(cityId);renderCities();renderChecklist();scheduleSave();}
+}
+function deleteCityTodo(cityId,todoId){
+  cityTodos[cityId]=(cityTodos[cityId]||[]).filter(x=>x.id!==todoId);
+  renderModalTodos(cityId);renderCities();renderChecklist();scheduleSave();
+}
+function addModalTodo(){
+  const inp=document.getElementById('modalNewTodo');const text=inp.value.trim();
+  if(!text||!modalCityId)return;
+  if(!cityTodos[modalCityId])cityTodos[modalCityId]=[];
+  cityTodos[modalCityId].push({id:'ct'+Date.now(),text,done:false,cat:''});
+  inp.value='';renderModalTodos(modalCityId);renderCities();renderChecklist();scheduleSave();
+}
+function saveModalNotes(){
+  const city=cities.find(c=>c.id===modalCityId);
+  if(city){city.notes=document.getElementById('modalNotes').value;scheduleSave();}
+}
+
+/* ═══ REORDER ═══ */
+function moveCity(idx,dir){
+  const ni=idx+dir;if(ni<0||ni>=cities.length)return;
+  [cities[idx],cities[ni]]=[cities[ni],cities[idx]];
+  renderCities();renderMap();scheduleSave();
+}
+
+/* ═══ RENDER ITINERARY ═══ */
+function renderCities(){
+  const grid=document.getElementById('cityGrid');grid.innerHTML='';
+  let totalNights=0,fixedCount=0,optCount=0;
+  const active=cities.filter(c=>c.nights>0);
+  cities.forEach((city,idx)=>{
+    totalNights+=city.nights;
+    if(city.nights>0){if(city.status==='fixed')fixedCount++;else optCount++;}
+    const todos=cityTodos[city.id]||[];
+    const doneTodos=todos.filter(t=>t.done).length;
+    const badgeClass='city-todo-badge'+(todos.length>0&&doneTodos===todos.length?' all-done':'');
+    const badgeText=todos.length===0?'+ to-do':`${doneTodos}/${todos.length} done`;
+    const card=document.createElement('div');
+    card.className='city-card'+(city.nights===0?' parked':'');
+    const statusLabel=city.nights===0?'— parked':(city.status==='fixed'?'✓ Fixed':'? Optional');
+    const statusClass=city.nights===0?'parked':city.status;
+    const nightsLabel=city.nights===0?'<em style="color:var(--ink3)">On the radar — not yet scheduled</em>':`${city.nights} night${city.nights!==1?'s':''}${city.status==='fixed'?' · <strong>confirmed</strong>':' · still deciding'}`;
+    card.innerHTML=`
+      <div class="city-accent" style="background:${city.nights===0?'var(--border)':city.color};"></div>
+      <div class="city-body" onclick="openModal(${city.id})">
+        <div class="city-header"><span class="city-name">${city.name}</span><span class="city-status ${statusClass}">${statusLabel}</span><span class="city-open-hint">click to open →</span></div>
+        <div class="city-dates-nights">${nightsLabel}</div>
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <div class="city-highlights" style="flex:1;">${city.highlights.map(h=>`<span class="highlight-tag">${h}</span>`).join('')}</div>
+          <span class="${badgeClass}" onclick="event.stopPropagation();openModal(${city.id})">${badgeText}</span>
+        </div>
+      </div>
+      <div class="city-reorder">
+        <button class="btn-move" onclick="moveCity(${idx},-1)" ${idx===0?'disabled':''}>↑</button>
+        <button class="btn-move" onclick="moveCity(${idx},1)" ${idx===cities.length-1?'disabled':''}>↓</button>
+      </div>
+      <div class="city-actions">
+        <button class="btn-icon" onclick="changeNights(${city.id},-1)" ${city.nights===0?'disabled style="opacity:.4"':''}>− night</button>
+        <button class="btn-icon" onclick="changeNights(${city.id},1)">+ night</button>
+        <button class="btn-icon" onclick="toggleStatus(${city.id})" ${city.nights===0?'disabled style="opacity:.4"':''}>⇆</button>
+        ${cities.length>1?`<button class="btn-icon danger" onclick="removeCity(${city.id})">✕</button>`:''}
+      </div>`;
+    grid.appendChild(card);
+    const activeIdx=active.indexOf(city);
+    if(city.nights>0&&activeIdx>=0&&activeIdx<active.length-1){
+      const nextCity=active[activeIdx+1];
+      const r=getLeg(city.id,nextCity.id);
+      const conn=document.createElement('div');conn.className='transport-connector';
+      if(!r){
+        conn.innerHTML=`<div class="transport-inner"><div class="transport-label">↓ Getting to ${nextCity.name}</div><div class="transport-no-direct">No transport data for this pair yet.</div></div>`;
+      } else {
+        const {leg,key}=r;
+        const opts=leg.options.map((opt,oi)=>{
+          const isRec=oi===leg.recommended,isSel=oi===leg.selected;
+          let cls='transport-option';
+          if(isSel)cls+=' selected-opt';else if(isRec)cls+=' preferred-style';
+          let badge='';
+          if(isSel&&isRec)badge='<span class="t-badge rec">✓ Selected · recommended</span>';
+          else if(isSel)badge='<span class="t-badge sel">✓ Selected</span>';
+          else if(isRec)badge='<span class="t-badge rec">Recommended</span>';
+          return `<div class="${cls}" onclick="selectTransportOption('${key}',${oi})">
+            <div class="transport-option-head"><span class="t-mode-icon">${opt.icon}</span><span class="t-mode">${opt.mode==='train'?'Train':'Flight'}</span>${badge}</div>
+            <div class="t-detail"><strong>${opt.label}</strong><br>${opt.duration}${opt.note?`<br><span style="color:var(--ink3)">${opt.note}</span>`:''}</div>
+            <div class="t-price-row"><span class="t-price-label">Cost (2 pax):</span><span class="t-price-cur">€</span>
+              <input class="t-price-input" type="number" min="0" value="${opt.price}" onclick="event.stopPropagation()"
+                onchange="updateTransportPrice('${key}',${oi},parseFloat(this.value)||0)">
+            </div>
+          </div>`;
+        }).join('');
+        conn.innerHTML=`<div class="transport-inner"><div class="transport-label">↓ Getting to ${nextCity.name}</div><div class="transport-options">${opts}</div></div>`;
+      }
+      grid.appendChild(conn);
+    }
+  });
+  const tt=calcTransportTotal();
+  document.getElementById('statNights').textContent=totalNights;
+  document.getElementById('statCities').textContent=cities.length;
+  document.getElementById('statFixed').textContent=fixedCount;
+  document.getElementById('statTransport').textContent='€'+tt;
+  const tItem=budgetItems.find(b=>b.isTransport);if(tItem)tItem.amount=tt;
+  renderTimeline();updateBudgetDisplay();
+}
+
+function renderTimeline(){
+  const bar=document.getElementById('timelineBar');bar.innerHTML='';
+  const total=cities.reduce((s,c)=>s+c.nights,0)||1;
+  cities.forEach(c=>{
+    if(c.nights===0)return;
+    const seg=document.createElement('div');seg.className='timeline-seg';
+    seg.style.cssText=`width:${c.nights/total*100}%;background:${c.color};opacity:${c.status==='optional'?.6:1};`;
+    seg.title=`${c.name} · ${c.nights} nights`;seg.textContent=c.nights>=2?c.name.split('/')[0].trim():'';
+    bar.appendChild(seg);
+  });
+}
+function updateTransportPrice(key,optIdx,val){if(transports[key]){transports[key].options[optIdx].price=val;renderCities();scheduleSave();}}
+function changeNights(id,delta){const c=cities.find(c=>c.id===id);if(c){c.nights=Math.max(0,c.nights+delta);renderCities();renderMap();scheduleSave();}}
+function toggleStatus(id){const c=cities.find(c=>c.id===id);if(c){c.status=c.status==='fixed'?'optional':'fixed';renderCities();scheduleSave();}}
+function removeCity(id){cities=cities.filter(c=>c.id!==id);renderCities();renderMap();scheduleSave();}
+function addCity(){
+  const name=document.getElementById('newCityName').value.trim();
+  const nVal=document.getElementById('newCityNights').value;
+  const nights=nVal!==''?parseInt(nVal):0;
+  const status=document.getElementById('newCityStatus').value;
+  if(!name)return;
+  cities.push({id:nextId++,name,nights,status,color:COLORS[cities.length%COLORS.length],lat:35,lng:105,highlights:[],notes:''});
+  document.getElementById('newCityName').value='';document.getElementById('newCityNights').value='';
+  renderCities();renderMap();scheduleSave();
+}
+
+/* ═══ MAP ═══ */
+let leafletMap=null,mapMarkers=[],mapLines=[],mapLabels=[];
+function initMap(){
+  if(leafletMap)return;
+  leafletMap=L.map('mapContainer').setView([30,105],4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18}).addTo(leafletMap);
+}
+function renderMap(){
+  if(!leafletMap)return;
+  mapMarkers.forEach(m=>leafletMap.removeLayer(m));mapLines.forEach(m=>leafletMap.removeLayer(m));mapLabels.forEach(m=>leafletMap.removeLayer(m));
+  mapMarkers=[];mapLines=[];mapLabels=[];
+  const active=cities.filter(c=>c.nights>0);
+  cities.filter(c=>c.nights===0).forEach(c=>{
+    if(!c.lat||!c.lng)return;
+    const icon=L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:50%;background:${c.color};opacity:.3;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);"></div>`,iconSize:[10,10],iconAnchor:[5,5]});
+    const m=L.marker([c.lat,c.lng],{icon}).addTo(leafletMap);m.bindTooltip(`${c.name} (parked)`);mapMarkers.push(m);
+  });
+  const latlngs=[];
+  active.forEach((city,i)=>{
+    if(!city.lat||!city.lng)return;
+    latlngs.push([city.lat,city.lng]);
+    const icon=L.divIcon({className:'',html:`<div style="width:32px;height:32px;border-radius:50%;background:${city.color};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:Helvetica Neue,sans-serif;">${i+1}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
+    const m=L.marker([city.lat,city.lng],{icon}).addTo(leafletMap);
+    m.bindTooltip(`${i+1}. ${city.name} · ${city.nights} nights`,{direction:'top'});
+    m.on('click',()=>openModal(city.id));mapMarkers.push(m);
+    if(i<active.length-1){
+      const nc=active[i+1];if(!nc.lat||!nc.lng)return;
+      const r=getLeg(city.id,nc.id);
+      let lineColor='#888',dashArr='6 5';
+      if(r){const opt=r.leg.options[r.leg.selected];if(opt.mode==='train'){lineColor='#1a4e78';dashArr='none';}else{lineColor='#c0392b';dashArr='6 4';}}
+      const line=L.polyline([[city.lat,city.lng],[nc.lat,nc.lng]],{color:lineColor,weight:2.5,dashArray:dashArr,opacity:.75}).addTo(leafletMap);
+      mapLines.push(line);
+      if(r){
+        const opt=r.leg.options[r.leg.selected];
+        const midLat=(city.lat+nc.lat)/2,midLng=(city.lng+nc.lng)/2;
+        const lbl=L.marker([midLat,midLng],{icon:L.divIcon({className:'',html:`<div style="background:white;border:1px solid ${lineColor};border-radius:20px;padding:2px 7px;font-size:10px;font-family:Helvetica Neue,sans-serif;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15);color:${lineColor};font-weight:600;">${opt.icon} ${opt.duration}</div>`,iconSize:[0,0],iconAnchor:[0,0]}),interactive:false}).addTo(leafletMap);
+        mapLabels.push(lbl);
+      }
+    }
+  });
+  if(latlngs.length>1)leafletMap.fitBounds(L.latLngBounds(latlngs).pad(.15));
+  else if(latlngs.length===1)leafletMap.setView(latlngs[0],7);
+  document.getElementById('mapLegend').innerHTML=cities.map((c,i)=>{
+    const ai=active.indexOf(c);const num=ai>=0?`${ai+1}. `:'';
+    return `<div class="map-legend-item" style="${c.nights===0?'opacity:.4':''}"><div class="map-legend-dot" style="background:${c.color};"></div>${num}${c.name}${c.nights===0?' (parked)':` · ${c.nights}n`}</div>`;
+  }).join('');
+}
+
+/* ═══ CHECKLIST ═══ */
+function renderChecklist(){
+  const container=document.getElementById('checklistContainer');container.innerHTML='';
+  let doneTotal=0,total=0;
+  Object.entries(checklists).forEach(([section,items])=>{
+    total+=items.length;doneTotal+=items.filter(i=>i.done).length;
+    const sec=document.createElement('div');sec.className='checklist-section';
+    sec.innerHTML=`<div class="checklist-heading">${section} (${items.filter(i=>i.done).length}/${items.length})</div>
+      <div class="checklist-items">${items.map(item=>`<div class="check-item ${item.done?'done':''}" id="ci-${item.id}">
+        <input type="checkbox" id="chk-${item.id}" ${item.done?'checked':''} onchange="toggleCheck('${section}','${item.id}')">
+        <label for="chk-${item.id}">${item.text}</label>
+        <button class="del-check" onclick="deleteCheck('${section}','${item.id}')">✕</button>
+      </div>`).join('')}</div>
+      <div class="add-check-row">
+        <input id="nc-${section.replace(/\W/g,'_')}" placeholder="Add item…" onkeydown="if(event.key==='Enter')addCheck('${section}',this)">
+        <button class="btn-primary" onclick="addCheck('${section}',document.getElementById('nc-${section.replace(/\W/g,'_')}'))">+</button>
+      </div>`;
+    container.appendChild(sec);
+  });
+  let ctDone=0,ctTotal=0;
+  cities.forEach(c=>{const t=cityTodos[c.id]||[];ctTotal+=t.length;ctDone+=t.filter(x=>x.done).length;});
+  total+=ctTotal;doneTotal+=ctDone;
+  const ctSec=document.createElement('div');ctSec.className='checklist-section';
+  let ctHtml=`<div class="checklist-heading">City to-dos (${ctDone}/${ctTotal})</div><div class="checklist-items">`;
+  cities.forEach(c=>{(cityTodos[c.id]||[]).forEach(t=>{ctHtml+=`<div class="check-item ${t.done?'done':''}">
+    <input type="checkbox" id="cchk-${t.id}" ${t.done?'checked':''} onchange="toggleCityTodo(${c.id},'${t.id}')">
+    <label for="cchk-${t.id}">${t.text}<span class="check-source-tag">${c.name}</span></label>
+  </div>`;});});
+  ctHtml+=`</div>`;ctSec.innerHTML=ctHtml;container.appendChild(ctSec);
+  const pct=total?Math.round(doneTotal/total*100):0;
+  document.getElementById('sidebarProgress').style.width=pct+'%';
+  document.getElementById('sidebarDone').textContent=doneTotal+' done';
+  document.getElementById('sidebarTotal').textContent=total+' items';
+}
+function toggleCheck(section,id){const item=checklists[section].find(i=>i.id===id);if(item){item.done=!item.done;renderChecklist();scheduleSave();}}
+function deleteCheck(section,id){checklists[section]=checklists[section].filter(i=>i.id!==id);renderChecklist();scheduleSave();}
+function addCheck(section,input){const text=input.value.trim();if(!text)return;checklists[section].push({id:'c'+Date.now(),text,done:false});input.value='';renderChecklist();scheduleSave();}
+
+/* ═══ BUDGET ═══ */
+const RATES={EUR:1,USD:1.08,CNY:7.85,GBP:0.86};
+const SYMBOLS={EUR:'€',USD:'$',CNY:'¥',GBP:'£'};
+function fmt(a){const cur=document.getElementById('currencySelect')?.value||'EUR';return SYMBOLS[cur]+Math.round(a*RATES[cur]).toLocaleString();}
+function renderBudget(){
+  const rc=document.getElementById('budgetRows');rc.innerHTML='';
+  budgetItems.forEach((item,i)=>{
+    const row=document.createElement('div');row.className='budget-row-item';
+    const sub=item.isTransport?`<div class="budget-transport-sub">auto-calculated from selected options</div>`:'';
+    row.innerHTML=`<div class="budget-cat-name">${item.cat}${sub}</div>
+      <input class="budget-amt-input" type="number" value="${item.amount}" min="0"
+        onchange="budgetItems[${i}].amount=parseFloat(this.value)||0;updateBudgetDisplay();scheduleSave();">`;
+    rc.appendChild(row);
+  });
+  updateBudgetDisplay();
+}
+function updateBudgetDisplay(){
+  const tt=calcTransportTotal();
+  const tItem=budgetItems.find(b=>b.isTransport);if(tItem)tItem.amount=tt;
+  document.querySelectorAll('.budget-row-item').forEach((row,i)=>{const inp=row.querySelector('.budget-amt-input');if(inp&&budgetItems[i]?.isTransport)inp.value=budgetItems[i].amount;});
+  const total=budgetItems.reduce((s,b)=>s+b.amount,0);
+  document.getElementById('budgetTotal').textContent=fmt(total);
+  document.getElementById('perPerson').textContent=fmt(total/2);
+  document.getElementById('perDay').textContent=fmt(total/20);
+  document.getElementById('totalTrip').textContent=fmt(total);
+  const active=cities.filter(c=>c.nights>0);const legs=[];
+  for(let i=0;i<active.length-1;i++){const r=getLeg(active[i].id,active[i+1].id);if(r){const opt=r.leg.options[r.leg.selected];legs.push(`${active[i].name.split('/')[0].trim()}→${active[i+1].name.split('/')[0].trim()} (${opt.icon}${fmt(opt.price)})`);}}
+  document.getElementById('transportBudgetNote').textContent=`Internal transport total: ${fmt(tt)}. Legs: ${legs.join(' · ')||'none yet'}.`;
+  document.getElementById('budgetLegend').innerHTML=budgetItems.map((item,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${catColors[i%catColors.length]}"></div><span style="color:var(--ink2);font-size:11px;">${item.cat}</span><span class="legend-pct">${fmt(item.amount)}</span></div>`).join('');
+  drawPie(total);
+}
+function drawPie(total){
+  const canvas=document.getElementById('budgetChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,110,110);let start=-Math.PI/2;
+  budgetItems.forEach((item,i)=>{if(!total)return;const slice=(item.amount/total)*2*Math.PI;ctx.beginPath();ctx.moveTo(55,55);ctx.arc(55,55,50,start,start+slice);ctx.closePath();ctx.fillStyle=catColors[i%catColors.length];ctx.fill();start+=slice;});
+  ctx.beginPath();ctx.arc(55,55,27,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+}
+
+/* ═══ PACKING ═══ */
+function renderPacking(){
+  const grid=document.getElementById('packingGrid');grid.innerHTML='';
+  packingData.forEach((cat,ci)=>{
+    const card=document.createElement('div');card.className='pack-card';
+    card.innerHTML=`<div class="pack-card-title">${cat.title}</div><div class="pack-items">
+      ${cat.items.map((item,ii)=>{const key=`${ci}-${ii}`;const checked=packingState[key]||false;return `<div class="pack-item ${checked?'done':''}">
+        <input type="checkbox" id="pk-${key}" ${checked?'checked':''} onchange="togglePacking('${key}',this.checked)">
+        <label for="pk-${key}">${item}</label>
+      </div>`;}).join('')}</div>`;
+    grid.appendChild(card);
+  });
+}
+function togglePacking(key,checked){packingState[key]=checked;document.getElementById('pk-'+key)?.closest('.pack-item')?.classList.toggle('done',checked);scheduleSave();}
+
+/* ═══ TIPS ═══ */
+function renderTips(){
+  const grid=document.getElementById('tipsGrid');grid.innerHTML='';
+  tipsData.forEach(tip=>{const card=document.createElement('div');card.className='tip-card';card.innerHTML=`<div class="tip-card-head"><span class="tip-card-icon">${tip.icon}</span><span class="tip-card-title">${tip.title}</span></div><ul class="tip-list">${tip.tips.map(t=>`<li>${t}</li>`).join('')}</ul>`;grid.appendChild(card);});
+}
+
+/* ═══ TABS ═══ */
+function showTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab,.nav-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{if(t.textContent.toLowerCase().includes(name==='tips'?'china tips':name))t.classList.add('active');});
+  document.querySelectorAll('.nav-item').forEach(t=>{if(t.textContent.toLowerCase().includes(name==='tips'?'china tips':name))t.classList.add('active');});
+  if(name==='budget')setTimeout(()=>updateBudgetDisplay(),50);
+  if(name==='map'){setTimeout(()=>{initMap();renderMap();leafletMap&&leafletMap.invalidateSize();},80);}
+}
+
+/* ═══ TOAST ═══ */
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+/* ═══ INIT ═══ */
+initFromFirebase();
+</script>
+
+
+</body></html>
